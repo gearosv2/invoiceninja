@@ -28,6 +28,8 @@ use App\Utils\Traits\MakesHash;
 use Exception;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use gearosv2\Paynow\Facades\Paynow;     //Paynow QR generation integration
+use DateTime;                           //Needed by Paynow::generateDynamic()
 
 class HtmlEngine
 {
@@ -763,6 +765,9 @@ class HtmlEngine
 
         $arrKeysLength = array_map('strlen', array_keys($data));
         array_multisort($arrKeysLength, SORT_DESC, $data);
+
+        /*Added to generate paynow to out to invoice PDF.*/
+        $data['$paynow_qr_img'] = ['value' => Paynow::generateDynamic($this->entity->amount, false, $this->entity->number, (new DateTime())->modify("+ 5 year"), $this->settings->name, 'SG', 'Singapore', $this->helpers->formatCustomFieldValue($this->company->custom_fields, 'company1', $this->settings->custom_value1, $this->client), null, true), 'label' => ''];
 
         return $data;
     }
