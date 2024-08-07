@@ -183,7 +183,6 @@ return [
         /*
          * Dependency Service Providers
          */
-        'Webpatser\Countries\CountriesServiceProvider',
 
         /*
          * Package Service Providers...
@@ -194,14 +193,14 @@ return [
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\ComposerServiceProvider::class,
         App\Providers\MultiDBProvider::class,
         App\Providers\ClientPortalServiceProvider::class,
         App\Providers\NinjaTranslationServiceProvider::class,
-    App\Providers\StaticServiceProvider::class,
+        App\Providers\StaticServiceProvider::class
     ],
 
     /*
@@ -217,7 +216,6 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         'Collector' => Turbo124\Beacon\CollectorFacade::class,
-        // 'Countries' => 'Webpatser\Countries\CountriesFacade',
         'CustomMessage' => App\Utils\ClientPortal\CustomMessage\CustomMessageFacade::class,
         'Redis'        => Illuminate\Support\Facades\Redis::class,
     ])->toArray(),

@@ -50,7 +50,7 @@ class StoreCreditRequest extends Request
             $rules['documents.*'] = $this->fileValidation();
         } elseif ($this->file('documents')) {
             $rules['documents'] = $this->fileValidation();
-        }else {
+        } else {
             $rules['documents'] = 'bail|sometimes|array';
         }
 
@@ -64,6 +64,9 @@ class StoreCreditRequest extends Request
         $user = auth()->user();
 
         $rules['client_id'] = 'required|exists:clients,id,company_id,'.$user->company()->id;
+        
+        $rules['invitations'] = 'sometimes|bail|array';
+        $rules['invitations.*.client_contact_id'] = 'bail|required|distinct';
 
         // $rules['number'] = new UniqueCreditNumberRule($this->all());
         $rules['number'] = ['nullable', Rule::unique('credits')->where('company_id', $user->company()->id)];
@@ -78,7 +81,7 @@ class StoreCreditRequest extends Request
         $rules['exchange_rate'] = 'bail|sometimes|numeric';
         $rules['amount'] = ['sometimes', 'bail', 'numeric', 'max:99999999999999'];
 
-$rules['date'] = 'bail|sometimes|date:Y-m-d';
+        $rules['date'] = 'bail|sometimes|date:Y-m-d';
 
         if ($this->invoice_id) {
             $rules['invoice_id'] = new ValidInvoiceCreditRule();

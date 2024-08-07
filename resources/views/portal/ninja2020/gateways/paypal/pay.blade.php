@@ -1,4 +1,4 @@
-@extends('portal.ninja2020.layout.payments', ['gateway_title' => ctrans('texts.payment_type_credit_card'), 'card_title' => ''])
+@extends('portal.ninja2020.layout.payments', ['gateway_title' => ctrans('texts.paypal'), 'card_title' => ''])
 
 @section('gateway_head')
 
@@ -16,7 +16,12 @@
 
     <div class="alert alert-failure mb-4" hidden id="errors"></div>
 
-    <div id="paypal-button-container" class="paypal-button-container"></div>
+    <div id="paypal-button-container" class="paypal-button-container">
+    </div>
+
+    <div id="is_working" class="flex mt-4 place-items-center hidden">
+       <span class="loader m-auto"></span>
+    </div>
    
 @endsection
 
@@ -25,10 +30,43 @@
 
 @push('footer')
 
+<style type="text/css">
+.loader {
+width: 48px;
+height: 48px;
+border-radius: 50%;
+position: relative;
+animation: rotate 1s linear infinite
+}
+.loader::before , .loader::after {
+content: "";
+box-sizing: border-box;
+position: absolute;
+inset: 0px;
+border-radius: 50%;
+border: 5px solid #454545;
+animation: prixClipFix 2s linear infinite ;
+}
+.loader::after{
+border-color: #FF3D00;
+animation: prixClipFix 2s linear infinite , rotate 0.5s linear infinite reverse;
+inset: 6px;
+}
+@keyframes rotate {
+0%   {transform: rotate(0deg)}
+100%   {transform: rotate(360deg)}
+}
+@keyframes prixClipFix {
+    0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
+    25%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
+    50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
+    75%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%)}
+    100% {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0)}
+}
+</style>
 <script src="https://www.paypal.com/sdk/js?client-id={!! $client_id !!}&currency={!! $currency !!}&components=buttons,funding-eligibility&intent=capture&enable-funding={!! $funding_source !!}"  data-partner-attribution-id="invoiceninja_SP_PPCP"></script>
 
 <script>
-
 //&buyer-country=US&currency=USD&enable-funding=venmo
     const fundingSource = "{!! $funding_source !!}";
     const clientId = "{{ $client_id }}";
@@ -43,9 +81,9 @@
             return orderId;  
         },
         onApprove: function(data, actions) {
-
-            console.log(data);
             
+            document.getElementById('is_working').classList.remove('hidden');
+
             document.getElementById("gateway_response").value =JSON.stringify( data );
             
             formData = JSON.stringify(Object.fromEntries(new FormData(document.getElementById("server_response")))),
@@ -60,10 +98,15 @@
                 body: formData,
             })
             .then(response => {
+
                 if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message ?? 'Unknown error.');
+                    });
                 }
-                return response.json(); // or response.json() if the response is JSON
+                
+                return response.json();
+
             })
             .then(data => {
 
@@ -87,8 +130,6 @@
                 document.getElementById('errors').hidden = false;
             });
 
-
-
         },
         onCancel: function() {
             window.location.href = "/client/invoices/";
@@ -103,9 +144,12 @@
         },
         onClick: function (){
 
+            console.log(fundingSource);
+
             if(fundingSource != 'card')
               document.getElementById('paypal-button-container').hidden = true;
 
+            // document.getElementById('is_working').classList.remove('hidden');
             document.querySelector('div[data-ref="required-fields-container').classList.add('hidden');
             
         },
@@ -124,8 +168,9 @@
 		if (document.getElementById("server_response").classList.contains('is-submitting')) {
 			e.preventDefault();
 		}
-		
+
 		document.getElementById("server_response").classList.add('is-submitting');
+
 	});
 
 </script>

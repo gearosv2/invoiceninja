@@ -125,7 +125,7 @@ class PreviewController extends BaseController
 
         $response = Response::make($pdf, 200);
         $response->header('Content-Type', 'application/pdf');
-        $response->header('Server-Timing', microtime(true) - $start);
+        $response->header('Server-Timing', (string) (microtime(true) - $start));
 
         return $response;
     }
@@ -146,8 +146,7 @@ class PreviewController extends BaseController
         if (request()->has('entity') &&
             request()->has('entity_id') &&
             ! empty(request()->input('entity')) &&
-            ! empty(request()->input('entity_id')))
-            {
+            ! empty(request()->input('entity_id'))) {
 
             $design_object = json_decode(json_encode(request()->input('design')));
 
@@ -155,7 +154,6 @@ class PreviewController extends BaseController
                 return response()->json(['message' => ctrans('texts.invalid_design_object')], 400);
             }
 
-            // $entity = ucfirst(request()->input('entity'));
             $entity = Str::camel(request()->input('entity'));
 
             $class = "App\Models\\$entity";
@@ -173,10 +171,9 @@ class PreviewController extends BaseController
             App::setLocale($entity_obj->client->preferredLocale());
             $t->replace(Ninja::transformTranslations($entity_obj->client->getMergedSettings()));
 
-            if($entity_obj->client){
+            if($entity_obj->client) {
                 $html = new HtmlEngine($entity_obj->invitations()->first());
-            }
-            else {
+            } else {
                 $html = new VendorHtmlEngine($entity_obj->invitations()->first());
             }
 
@@ -291,7 +288,7 @@ class PreviewController extends BaseController
         /** @var \App\Models\Company $company */
         $company = $user->company();
 
-        $design_object = json_decode(json_encode(request()->input('design')), 1);
+        $design_object = json_decode(json_encode(request()->input('design')), true);
 
         $ts = (new TemplateService());
 
