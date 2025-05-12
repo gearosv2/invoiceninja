@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -58,7 +58,7 @@ class SetDomainNameDb
                     MultiDB::setDb('db-ninja-01');
                     nlog('SetDomainNameDb:: I could not set the DB - defaulting to DB1');
                     $request->session()->invalidate();
-                    //abort(400, 'Domain not found');
+                    $request->session()->regenerateToken();
                 }
             }
         } else {
@@ -76,6 +76,7 @@ class SetDomainNameDb
                     MultiDB::setDb('db-ninja-01');
                     nlog('SetDomainNameDb:: I could not set the DB - defaulting to DB1');
                     $request->session()->invalidate();
+                    $request->session()->regenerateToken();
                 }
             }
         }

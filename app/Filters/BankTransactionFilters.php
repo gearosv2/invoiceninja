@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -108,13 +108,24 @@ class BankTransactionFilters extends QueryFilters
             }
 
             if (count($debit_or_withdrawal_array) >= 1) {
-                $query->orWhereIn('base_type', $debit_or_withdrawal_array);
+                $query->whereIn('base_type', $debit_or_withdrawal_array);
             }
         });
 
         return $this->builder;
     }
 
+    public function active_banks(string $value = ''): Builder
+    {
+
+        if (strlen($value) == 0 || $value != 'true') {
+            return $this->builder;
+        }
+
+        return $this->builder->whereHas('bank_integration', function ($query) {
+            $query->where('is_deleted', 0)->whereNull('deleted_at');
+        });
+    }
 
     /**
      * Filters the list based on Bank Accounts.
@@ -124,7 +135,7 @@ class BankTransactionFilters extends QueryFilters
      */
     public function bank_integration_ids(string $ids = ''): Builder
     {
-        if(strlen($ids) == 0) {
+        if (strlen($ids) == 0) {
             return $this->builder;
         }
 
@@ -148,7 +159,7 @@ class BankTransactionFilters extends QueryFilters
     {
         $sort_col = explode('|', $sort);
 
-        if (!is_array($sort_col) || count($sort_col) != 2) {
+        if (!is_array($sort_col) || count($sort_col) != 2 || !in_array($sort_col[0], \Illuminate\Support\Facades\Schema::getColumnListing($this->builder->getModel()->getTable()))) {
             return $this->builder;
         }
 

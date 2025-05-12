@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -76,7 +76,9 @@ class PingController extends BaseController
     public function health()
     {
         if (Ninja::isNinja()) {
-            return response()->json(['message' => ctrans('texts.route_not_available'), 'errors' => []], 403);
+
+            return response()->json(['message' => '', 'errors' => []], 200);
+            // return response()->json(['message' => ctrans('texts.route_not_available'), 'errors' => []], 403);
         }
 
         return response()->json(SystemHealth::check(), 200);

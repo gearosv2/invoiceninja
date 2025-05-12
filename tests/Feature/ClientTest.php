@@ -37,8 +37,8 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 /**
- * @test
- * @covers App\Http\Controllers\ClientController
+ * 
+ *  App\Http\Controllers\ClientController
  */
 class ClientTest extends TestCase
 {
@@ -49,8 +49,8 @@ class ClientTest extends TestCase
     public $faker;
 
     public $client_id;
-    
-    protected function setUp() :void
+
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -105,8 +105,8 @@ class ClientTest extends TestCase
             $this->assertEquals($gs->id, $c->group_settings_id);
         });
 
-        foreach($arr['data'] as $client_response){
-            
+        foreach($arr['data'] as $client_response) {
+
             $this->assertEquals($gs->hashed_id, $client_response['group_settings_id']);
         }
     }
@@ -128,14 +128,49 @@ class ClientTest extends TestCase
 
         $this->company->saveSettings($settings, $this->company);
 
-        $client_exchange_rate = round($c->setExchangeRate(),2);
+        $client_exchange_rate = round($c->setExchangeRate(), 2);
 
         $aud_currency = Currency::find(12);
         $eur_currency = Currency::find(3);
 
         $synthetic_exchange = $aud_currency->exchange_rate / $eur_currency->exchange_rate;
 
-        $this->assertEquals($client_exchange_rate, round($synthetic_exchange,2));
+        $this->assertEquals($client_exchange_rate, round($synthetic_exchange, 2));
+
+    }
+
+    public function testClientIsPrimaryScalarTransform()
+    {
+        $data = [
+            
+                'address1' => '105 Drive',
+                'address2' => '122',
+                'city' => 'NoRoses',
+                'contacts' => [
+                    '0' => [
+                        'email' => 'craig@gmail.za',
+                        'first_name' => 'Leon',
+                        'last_name' => 'Labagne'
+                    ],
+                    'is_primary' => true,
+                    'send_email' => false
+                ],
+                'country_id' => 710,
+                'id_number' => '2003/028851/06',
+                'name' => 'Targas Ltd',
+                'postal_code' => '2196',
+                'private_notes' => 'DMARC Client | Tenant ID: 45 | Team Name: Targas',
+                'state' => 'Gauteng',
+                'vat_number' => 'VAT: 33'
+            
+        ];
+
+        $response = $this->withHeaders([
+            'X-API-SECRET' => config('ninja.api_secret'),
+            'X-API-TOKEN' => $this->token,
+        ])->postJson('/api/v1/clients', $data);
+
+        $response->assertStatus(200);
 
     }
 
@@ -235,7 +270,7 @@ class ClientTest extends TestCase
             'company_id' => $this->company->id,
             'email' => ''
         ]);
-          
+
 
         $this->assertEquals(2, $c->contacts->count());
         $this->assertEquals(3, $c1->contacts->count());
@@ -254,7 +289,7 @@ class ClientTest extends TestCase
     {
         $line_items = [];
 
-        for ($x=0; $x<$number; $x++) {
+        for ($x = 0; $x < $number; $x++) {
             $item = InvoiceItemFactory::create();
             $item->quantity = 1;
             $item->cost = 10;
@@ -405,7 +440,7 @@ class ClientTest extends TestCase
     }
 
     /*
-     * @covers ClientController
+     *  ClientController
      */
     public function testClientRestEndPoints()
     {
@@ -570,7 +605,7 @@ class ClientTest extends TestCase
             'is_locked' => 0,
         ]);
 
-        $company_token = new CompanyToken;
+        $company_token = new CompanyToken();
         $company_token->user_id = $user->id;
         $company_token->company_id = $company->id;
         $company_token->account_id = $account->id;
@@ -625,7 +660,7 @@ class ClientTest extends TestCase
             'is_locked' => 0,
         ]);
 
-        $company_token = new CompanyToken;
+        $company_token = new CompanyToken();
         $company_token->user_id = $user->id;
         $company_token->company_id = $company->id;
         $company_token->account_id = $account->id;

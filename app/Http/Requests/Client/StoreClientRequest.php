@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -13,13 +13,11 @@ namespace App\Http\Requests\Client;
 
 use App\DataMapper\ClientSettings;
 use App\Http\Requests\Request;
-use App\Http\ValidationRules\Client\CountryCodeExistsRule;
 use App\Http\ValidationRules\Ninja\CanStoreClientsRule;
 use App\Http\ValidationRules\ValidClientGroupSettingsRule;
 use App\Models\Client;
 use App\Models\GroupSetting;
 use App\Utils\Traits\MakesHash;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class StoreClientRequest extends Request
@@ -200,7 +198,7 @@ class StoreClientRequest extends Request
 
     private function getCountryCode(string $country_code)
     {
-        
+
         /** @var \Illuminate\Support\Collection<\App\Models\Country> */
         $countries = app('countries');
 
@@ -209,12 +207,12 @@ class StoreClientRequest extends Request
         });
 
         return $country ? (string) $country->id : '';
-        
+
     }
 
     private function getCurrencyCode($code)
     {
-        
+
         /** @var \Illuminate\Support\Collection<\App\Models\Currency> */
         $currencies = app('currencies');
 
@@ -223,6 +221,6 @@ class StoreClientRequest extends Request
         });
 
         return  $currency ? (string)$currency->id : '';
-        
+
     }
 }

@@ -4,22 +4,23 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
 
 namespace App\Services\Credit;
 
-use App\Factory\PaymentFactory;
-use App\Jobs\EDocument\CreateEDocument;
+use App\Utils\Ninja;
 use App\Models\Credit;
 use App\Models\Payment;
 use App\Models\PaymentType;
-use App\Repositories\CreditRepository;
-use App\Repositories\PaymentRepository;
-use App\Utils\Ninja;
+use App\Factory\PaymentFactory;
 use App\Utils\Traits\MakesHash;
+use App\Repositories\CreditRepository;
+use App\Services\Invoice\LocationData;
+use App\Jobs\EDocument\CreateEDocument;
+use App\Repositories\PaymentRepository;
 use Illuminate\Support\Facades\Storage;
 
 class CreditService
@@ -31,6 +32,11 @@ class CreditService
     public function __construct($credit)
     {
         $this->credit = $credit;
+    }
+
+    public function location(): array
+    {
+        return (new LocationData($this->credit))->run();       
     }
 
     public function getCreditPdf($invitation)
@@ -152,9 +158,9 @@ class CreditService
         return $this;
     }
 
-    public function markSent()
+    public function markSent($fire_event = false)
     {
-        $this->credit = (new MarkSent($this->credit->client, $this->credit))->run();
+        $this->credit = (new MarkSent($this->credit->client, $this->credit))->run($fire_event);
 
         return $this;
     }
@@ -267,7 +273,7 @@ class CreditService
 
     public function restoreCredit()
     {
-        
+
         $paid_to_date = $this->credit->invoice_id ? $this->credit->balance : 0;
 
         $this->credit

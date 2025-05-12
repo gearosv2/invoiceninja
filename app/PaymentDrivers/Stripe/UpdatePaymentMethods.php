@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -46,6 +46,18 @@ class UpdatePaymentMethods
         );
 
         foreach ($card_methods as $method) {
+            $this->addOrUpdateCard($method, $customer->id, $client, GatewayType::CREDIT_CARD);
+        }
+
+        $link_methods = PaymentMethod::all(
+            [
+                'customer' => $customer->id,
+                'type' => 'link',
+            ],
+            $this->stripe->stripe_connect_auth
+        );
+
+        foreach ($link_methods as $method) {
             $this->addOrUpdateCard($method, $customer->id, $client, GatewayType::CREDIT_CARD);
         }
 
@@ -217,8 +229,13 @@ class UpdatePaymentMethods
 
     private function buildPaymentMethodMeta(PaymentMethod $method, $type_id)
     {
+
         switch ($type_id) {
             case GatewayType::CREDIT_CARD:
+
+                if ($method->type == 'link') {
+                    return new \stdClass();
+                }
 
                 /**
                  * @class \Stripe\PaymentMethod $method

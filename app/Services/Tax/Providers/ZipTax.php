@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -30,14 +30,14 @@ class ZipTax implements TaxProviderInterface
 
         $response = $this->callApi(['key' => $this->api_key, 'address' => $string_address]);
 
-        if($response->successful()) {
+        if ($response->successful()) {
             return $this->parseResponse($response->json());
         }
 
-        if(isset($this->address['postal_code'])) {
+        if (isset($this->address['postal_code'])) {
             $response = $this->callApi(['key' => $this->api_key, 'address' => $this->address['postal_code']]);
 
-            if($response->successful()) {
+            if ($response->successful()) {
                 return $this->parseResponse($response->json());
             }
 
@@ -68,11 +68,11 @@ class ZipTax implements TaxProviderInterface
     private function parseResponse($response)
     {
 
-        if(isset($response['rCode']) && $response['rCode'] == 100 && isset($response['results']['0'])) {
+        if (isset($response['rCode']) && $response['rCode'] == 100 && isset($response['results']['0'])) {
             return $response['results']['0'];
         }
 
-        if(isset($response['rCode']) && class_exists(\Modules\Admin\Events\TaxProviderException::class)) {
+        if (isset($response['rCode']) && class_exists(\Modules\Admin\Events\TaxProviderException::class)) {
             event(new \Modules\Admin\Events\TaxProviderException($response['rCode']));
         }
 

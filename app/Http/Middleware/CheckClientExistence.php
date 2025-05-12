@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -35,7 +35,6 @@ class CheckClientExistence
         auth()->guard('contact')->user()->loadMissing(['company']); // @phpstan-ignore method.notFound
 
         $multiple_contacts = ClientContact::query()
-            // ->with('client.gateway_tokens', 'company')
             ->where('email', auth()->guard('contact')->user()->email)
             ->whereNotNull('email')
             ->where('email', '<>', '')
@@ -57,6 +56,9 @@ class CheckClientExistence
         }
 
         if (count($multiple_contacts) == 1 && ! Auth::guard('contact')->check()) {
+            
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
             Auth::guard('contact')->loginUsingId($multiple_contacts[0]->id, true);
 
             auth()->guard('contact')->user()->loadMissing(['client' => function ($query) {
@@ -66,7 +68,6 @@ class CheckClientExistence
         }
 
         session()->put('multiple_contacts', $multiple_contacts);
-
         session()->put('is_silent', request()->has('silent'));
 
         return $next($request);

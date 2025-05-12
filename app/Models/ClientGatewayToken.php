@@ -4,14 +4,13 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
 
 namespace App\Models;
 
-use App\Utils\Traits\MakesDates;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -42,7 +41,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class ClientGatewayToken extends BaseModel
 {
-    use MakesDates;
     use SoftDeletes;
 
     protected $casts = [
@@ -63,6 +61,7 @@ class ClientGatewayToken extends BaseModel
         'gateway_type_id',
         'meta',
         'client_id',
+        'is_default',
     ];
 
     public function getEntityType()

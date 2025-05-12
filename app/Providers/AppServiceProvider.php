@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -126,18 +126,18 @@ class AppServiceProvider extends ServiceProvider
                 new Dsn(
                     'brevo+api',
                     'default',
-                    config('services.brevo.key')
+                    config('services.brevo.secret')
                 )
             );
         });
-        Mailer::macro('brevo_config', function (string $brevo_key) {
+        Mailer::macro('brevo_config', function (string $brevo_secret) {
             // @phpstan-ignore /** @phpstan-ignore-next-line **/
             Mailer::setSymfonyTransport(
                 (new BrevoTransportFactory())->create(
                     new Dsn(
                         'brevo+api',
                         'default',
-                        $brevo_key
+                        $brevo_secret
                     )
                 )
             );
@@ -145,12 +145,14 @@ class AppServiceProvider extends ServiceProvider
             return $this;
         });
 
+
+        //Prevents destructive commands from being run in hosted environments
+        \DB::prohibitDestructiveCommands(Ninja::isHosted());
+
+
     }
 
     public function register(): void
     {
-        if (Ninja::isHosted()) {
-            $this->app->register(\App\Providers\BroadcastServiceProvider::class);
-        }
     }
 }

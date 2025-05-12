@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -80,7 +80,7 @@ class UpdatePaymentRequest extends Request
 
         if (isset($input['invoices']) && is_array($input['invoices']) !== false) {
             foreach ($input['invoices'] as $key => $value) {
-                if(isset($input['invoices'][$key]['invoice_id'])) {
+                if (isset($input['invoices'][$key]['invoice_id'])) {
                     $input['invoices'][$key]['invoice_id'] = $this->decodePrimaryKey($value['invoice_id']);
                 }
             }
@@ -100,7 +100,7 @@ class UpdatePaymentRequest extends Request
     public function messages()
     {
         return [
-            'distinct' => 'Attemping duplicate payment on the same invoice Invoice',
+            'distinct' => 'Attemping duplicate payment on the same Invoice',
         ];
     }
 }

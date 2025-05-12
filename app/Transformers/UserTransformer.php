@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -40,7 +40,7 @@ class UserTransformer extends EntityTransformer
 
     public function transform(User $user)
     {
-        $ref = new \stdClass;
+        $ref = new \stdClass();
         $ref->free = 0;
         $ref->pro = 0;
         $ref->enterprise = 0;
@@ -118,7 +118,7 @@ class UserTransformer extends EntityTransformer
 
         $cu = $user->company_users()->where('company_id', $user->company_id)->first();
 
-        if(!$cu) {
+        if (!$cu) {
             return null;
         }
 

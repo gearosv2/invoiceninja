@@ -1451,16 +1451,31 @@ Ensure the default browser behavior of the `hidden` attribute.
                 @csrf
                     <input type="hidden" name="gateway_response"/>
                     <div class="alert alert-failure mb-4" hidden="" id="errors"></div>
-                    <div class="form-group mb-[10px]">
+                    <div class="form-group mb-[10px] flex">
+
+                      <div class="w-1/2">
                         <input
                                 type="text"
                                 class="form-control block w-full px-3 py-2 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-light-grey rounded transition ease-in-out m-0 focus:primary-blue focus:outline-none"
-                                id="name"
-                                placeholder="{{ ctrans('texts.name') }}"
-                                name="name"
-                                value="{{$client->name}}"
+                                id="first_name"
+                                placeholder="{{ ctrans('texts.first_name') }}"
+                                name="first_name"
+                                value="{{ auth()->guard('contact')->user()->first_name}}"
                                 required
                         />
+                      </div>
+                      <div class="w-1/2">
+                        <input
+                                type="text"
+                                class="form-control block w-full px-3 py-2 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-light-grey rounded transition ease-in-out m-0 focus:primary-blue focus:outline-none"
+                                id="lastt_name"
+                                placeholder="{{ ctrans('texts.last_name') }}"
+                                name="last_name" 
+                                value="{{ auth()->guard('contact')->user()->last_name}}"
+                                required
+                        />
+                      </div>
+                      
                     </div>
                     <div class="form-group mb-[10px]">
                         <input
@@ -1526,7 +1541,7 @@ Ensure the default browser behavior of the `hidden` attribute.
                 <select name="country" id="country" class="form-select w-full py-[9.5px] px-[12px] border border-light-grey rounded transition ease-in-out m-0 focus:border-primary-blue focus:outline-none bg-white">
                     <option value="{{ $client->country->id}}" selected>{{ $client->country->iso_3166_2 }} ({{ $client->country->name }})</option>
                     @foreach($countries as $country)
-                        <option value="{{ $country->id }}">{{ $country->iso_3166_2 }} ({{ $country->name }})></option>
+                        <option value="{{ $country->id }}">{{ $country->iso_3166_2 }} ({{ $country->getName() }})</option>
                     @endforeach
                 </select>
               </div>
@@ -1568,13 +1583,13 @@ Ensure the default browser behavior of the `hidden` attribute.
                     <li class="mb-[5px]">Unlimited Clients & Invoices & Quotes</li>
                     <li class="mb-[5px]">Remove "Created by Invoice Ninja"</li>
                     <li class="mb-[5px]">Send Invoice Emails via Gmail or MSN Accounts</li>
-                    <li class="mb-[5px]">10 Professional Invoice & Quote Template Designs</li>
+                    <li class="mb-[5px]">11 Professional Invoice & Quote Template Designs</li>
                     <li class="mb-[5px]">Branded URL Option: "YourBrand".Invoicing.co"</li>
                     <li class="mb-[5px]">Customize Invoice Designs & Email Templates</li>
                     <li class="mb-[5px]">Create Client Subscriptions: Recurring & Auto-billing</li>
                     <li class="mb-[5px]">API Integration with 3rd Party Apps & Platforms</li>
                     <li class="mb-[5px]">Display Clients E-Signature on Invoices & Quotes</li>
-                    <li>Setup Custom Payment Auto-Reminder Emails</li>
+                    <li class="mb-[5px]">Setup Custom Payment Auto-Reminder Emails</li>
                 </ul>
                 <p class="text-primary-blue mt-[30px] font-bold text-[16px] italic relative z-10">
                     &amp; Much More!
@@ -1628,7 +1643,7 @@ Ensure the default browser behavior of the `hidden` attribute.
                               <li class="mb-[5px]">Remove "Created by Invoice Ninja"</li>
                               <li class="mb-[5px]">Email Invoices via Gmail & MSN</li>
                               <li class="mb-[5px]">Branded URL: 'YourSite".Invoicing.co'</li>
-                              <li class="mb-[5px]">10 Professional Invoice Templates</li>
+                              <li class="mb-[5px]">11 Professional Invoice Templates</li>
                               <li class="mb-[5px]">Customize Invoice Designs</li>
                               <li class="mb-[5px]">Recurring & Auto-Billing Invoices</li>
                               <li class="mb-[5px]">API Integration with 3rd Party Apps</li>
@@ -1640,7 +1655,8 @@ Ensure the default browser behavior of the `hidden` attribute.
                               <li class="mb-[5px]">Reports: Invoices, Expenses, P&L, more</li>
                               <li class="mb-[5px]">Bulk Email Invoices, Quotes, Credits</li>
                               <li class="mb-[5px]">Interlink 10 Companies with 1 Login</li>
-                              <li>Create Unique "Client Group" Settings</li>
+                              <li class="mb-[5px]">Setup Custom Payment Auto-Reminder Emails</li>
+                    
                           </ul>
                         </div>
                     </div>
@@ -1689,7 +1705,8 @@ Ensure the default browser behavior of the `hidden` attribute.
                             <ul class="list-checkmark relative z-10">
                               <li class="mb-[20px]">Create Additional Account Users (up to 30!) & Set Access Permissions per User</li>
                               <li class="mb-[20px]">Attach Files to Emails & Client-Portal (pdf, jpg, ppt, xls, doc & more)</li>
-                              <li>Fully Branded Client Portal: "Billing.YourCompany.com"</li>
+                              <li class="mb-[20px]">Fully Branded Client Portal: "Billing.YourCompany.com"</li>
+                              <li class="mb-[20px]">Integrate Your Frinancial Accounts and Sync Banking Transactions via Yodlee or Nodigen Banking Platforms</li>
                           </ul>
                         </div>
                     </div>
@@ -1722,7 +1739,7 @@ Ensure the default browser behavior of the `hidden` attribute.
                               <li class="mb-[5px]">Remove "Created by Invoice Ninja"</li>
                               <li class="mb-[5px]">Email Invoices via Gmail & MSN</li>
                               <li class="mb-[5px]">Branded URL: 'YourSite".Invoicing.co'</li>
-                              <li class="mb-[5px]">10 Professional Invoice Templates</li>
+                              <li class="mb-[5px]">11 Professional Invoice Templates</li>
                               <li class="mb-[5px]">Customize Invoice Designs</li>
                               <li class="mb-[5px]">Recurring & Auto-Billing Invoices</li>
                               <li class="mb-[5px]">API Integration with 3rd Party Apps</li>
@@ -1781,7 +1798,8 @@ Ensure the default browser behavior of the `hidden` attribute.
                             <ul class="list-checkmark relative z-10">
                               <li class="mb-[20px]">Create Additional Account Users (up to 20!) & Set Access Permissions per User</li>
                               <li class="mb-[20px]">Attach Files to Emails & Client-Portal (pdf, jpg, ppt, xls, doc & more)</li>
-                              <li>Fully Branded Client Portal: "Billing.YourCompany.com"</li>
+                              <li class="mb-[20px]">Fully Branded Client Portal: "Billing.YourCompany.com"</li>
+                              <li class="mb-[20px]">Integrate Your Frinancial Accounts and Sync Banking Transactions via Yodlee or Nodigen Banking Platforms</li>
                           </ul>
                         </div>
                     </div>
@@ -1809,14 +1827,18 @@ var elements = stripe.elements({
 
 var cardElement = elements.create('card', {
     value: {
-        postalCode: document.querySelector('input[name=postal_code]').content,
-        name: document.querySelector('input[name=name]').content,
+        postalCode: document.querySelector('input[name=postal_code]').value,
+        name: document.querySelector('input[name=first_name]').value + ' ' + document.querySelector('input[name=last_name]').value,
     }
 });
 
 cardElement.mount('#card-element');
 
 const form = document.getElementById('card-form');
+
+form.addEventListener('submit', (event) => {
+    event.preventDefault(); // Prevent default form submission
+});
 
 var e = document.getElementById("country");
 var country_value = e.options[e.selectedIndex].value;
@@ -1827,12 +1849,12 @@ var country_value = e.options[e.selectedIndex].value;
 
         //make sure the user has entered their name
 
-        if (document.querySelector('input[name=name]').value == '') {
+        if (document.querySelector('input[name=first_name]').value == '') {
           let errors = document.getElementById('errors');
           let payNowButton = document.getElementById('pay-now');
 
           errors.textContent = '';
-          errors.textContent = "{{ ctrans('texts.please_enter_a_name') }}";
+          errors.textContent = "{{ ctrans('texts.please_enter_a_first_name') }}";
           errors.hidden = false;
 
           payNowButton.disabled = false;
@@ -1841,6 +1863,19 @@ var country_value = e.options[e.selectedIndex].value;
           return;
         }
 
+        if (document.querySelector('input[name=last_name]').value == '') {
+          let errors = document.getElementById('errors');
+          let payNowButton = document.getElementById('pay-now');
+
+          errors.textContent = '';
+          errors.textContent = "{{ ctrans('texts.please_enter_a_last_name') }}";
+          errors.hidden = false;
+
+          payNowButton.disabled = false;
+          payNowButton.querySelector('svg').classList.add('hidden');
+          payNowButton.querySelector('span').classList.remove('hidden');
+          return;
+        }
 
         let payNowButton = document.getElementById('pay-now');
         payNowButton = payNowButton;
@@ -1851,14 +1886,14 @@ var country_value = e.options[e.selectedIndex].value;
         stripe.handleCardSetup(this.client_secret, cardElement, {
                 payment_method_data: {
                       billing_details: {
-                        name: document.querySelector('input[name=name]').content,
+                        name: document.querySelector('input[name=first_name]').value + ' ' + document.querySelector('input[name=last_name]').value,
                         email: '{{ $client->present()->email() }}',
                         address: {
-                          line1: document.querySelector('input[name=address1]').content,
-                          line2: document.querySelector('input[name=address2]').content,
-                          city: document.querySelector('input[name=city]').content,
-                          postal_code: document.querySelector('input[name=postal_code]').content,
-                          state: document.querySelector('input[name=state]').content,
+                          line1: document.querySelector('input[name=address1]').value,
+                          line2: document.querySelector('input[name=address2]').value,
+                          city: document.querySelector('input[name=city]').value,
+                          postal_code: document.querySelector('input[name=postal_code]').value,
+                          state: document.querySelector('input[name=state]').value,
                         }        
                 },
               }

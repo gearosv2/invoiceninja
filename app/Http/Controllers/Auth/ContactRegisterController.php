@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -44,11 +44,34 @@ class ContactRegisterController extends Controller
         $t = app('translator');
         $t->replace(Ninja::transformTranslations($company->settings));
 
-        return render('auth.register', ['register_company' => $company, 'account' => $company->account, 'submitsForm' => false]);
+        $domain_name = request()->getHost();
+
+        $show_turnstile = false;
+
+        if (config('ninja.cloudflare.turnstile.site_key') && strpos($domain_name, config('ninja.app_domain')) !== false) {
+            $show_turnstile = true;
+        }
+
+        $data = [
+            'formed_disabled' => $company->account->isFreeHostedClient(),
+            'register_company' => $company, 
+            'account' => $company->account, 
+            'submitsForm' => false, 
+            'show_turnstile' => $show_turnstile
+        ];
+
+        return render('auth.register', $data);
     }
 
     public function register(RegisterRequest $request)
     {
+        
+        $company = $request->company();
+
+        if (! $company->client_can_register || $company->account->isFreeHostedClient()) {
+            abort(403, 'This page is restricted');
+        }
+
         $request->merge(['company' => $request->company()]);
 
         $service = new ClientRegisterService(

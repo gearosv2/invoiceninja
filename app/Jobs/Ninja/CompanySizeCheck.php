@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -64,7 +64,7 @@ class CompanySizeCheck implements ShouldQueue
                       $old_credit_balance = $client->credit_balance;
                       $new_credit_balance = $client->service()->getCreditBalance();
 
-                      if(floatval($old_credit_balance) !== floatval($new_credit_balance)) {
+                      if (floatval($old_credit_balance) !== floatval($new_credit_balance)) {
                           $client->credit_balance = $client->service()->getCreditBalance();
                           $client->saveQuietly();
                       }
@@ -106,7 +106,7 @@ class CompanySizeCheck implements ShouldQueue
                           $old_credit_balance = $client->credit_balance;
                           $new_credit_balance = $client->service()->getCreditBalance();
 
-                          if(floatval($old_credit_balance) !== floatval($new_credit_balance)) {
+                          if (floatval($old_credit_balance) !== floatval($new_credit_balance)) {
                               $client->credit_balance = $client->service()->getCreditBalance();
                               $client->saveQuietly();
                           }

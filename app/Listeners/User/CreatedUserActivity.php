@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -48,6 +48,7 @@ class CreatedUserActivity implements ShouldQueue
         $fields->user_id = $user_id;
         $fields->company_id = $event->company->id;
         $fields->activity_type_id = Activity::CREATE_USER;
+        $fields->account_id = $event->company->account_id;
 
         $this->activityRepo->save($fields, $event->user, $event->event_vars);
     }

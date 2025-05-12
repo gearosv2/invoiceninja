@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -154,6 +154,7 @@ class BaseController extends Controller
           'company.bank_transactions',
           'company.bank_transaction_rules',
           'company.task_schedulers',
+          'company.locations',
         ];
 
     /**
@@ -178,6 +179,7 @@ class BaseController extends Controller
         'company.bank_integrations',
         'company.bank_transaction_rules',
         'company.task_schedulers',
+        'company.locations',
     ];
 
     /**
@@ -525,6 +527,9 @@ class BaseController extends Controller
                 'company.task_schedulers' => function ($query) {
                     $query->whereNotNull('updated_at');
                 },
+                'company.locations' => function ($query) {
+                    $query->whereNotNull('updated_at');
+                },
             ]
         );
 
@@ -629,6 +634,9 @@ class BaseController extends Controller
                     if (! $user->isAdmin()) {
                         $query->where('schedulers.user_id', $user->id);
                     }
+                },
+                'company.locations' => function ($query) use ($created_at) {
+                    $query->where('created_at', '>=', $created_at);
                 },
             ]
         );
@@ -924,9 +932,9 @@ class BaseController extends Controller
                 if ($this->entity_type == BankIntegration::class && !$user->isSuperUser() && $user->hasIntersectPermissions(['create_bank_transaction','edit_bank_transaction','view_bank_transaction'])) {
                     $query->exclude(["balance"]);
                 } //allows us to selective display bank integrations back to the user if they can view / create bank transactions but without the bank balance being present in the response
-                elseif($this->entity_type == TaxRate::class && $user->hasIntersectPermissions(['create_invoice','edit_invoice','create_quote','edit_quote','create_purchase_order','edit_purchase_order'])) {
+                elseif ($this->entity_type == TaxRate::class && $user->hasIntersectPermissions(['create_invoice','edit_invoice','create_quote','edit_quote','create_purchase_order','edit_purchase_order'])) {
                     // need to show tax rates if the user has the ability to create documents.
-                } elseif($this->entity_type == ExpenseCategory::class && $user->hasPermission('create_expense')) {
+                } elseif ($this->entity_type == ExpenseCategory::class && $user->hasPermission('create_expense')) {
                     // need to show expense categories if the user has the ability to create expenses.
                 } else {
                     $query->where('user_id', '=', $user->id);
@@ -934,7 +942,7 @@ class BaseController extends Controller
             } elseif (in_array($this->entity_type, [Design::class, GroupSetting::class, PaymentTerm::class, TaskStatus::class])) {
                 // nlog($this->entity_type);
             } else {
-                $query->where(function ($q) use ($user){ //grouping these together improves query performance significantly)
+                $query->where(function ($q) use ($user) { //grouping these together improves query performance significantly)
                     $q->where('user_id', '=', $user->id)->orWhere('assigned_user_id', $user->id);
                 });
             }
@@ -994,9 +1002,9 @@ class BaseController extends Controller
 
                 $response_data = Statics::company($user->getCompany()->getLocale());
 
-                if(request()->has('einvoice')) {
+                if (request()->has('einvoice')) {
 
-                    if(class_exists(Schema::class)){
+                    if (class_exists(Schema::class)) {
                         $ro = new Schema();
                         $response_data['einvoice_schema'] = $ro('Peppol');
                     }
@@ -1221,5 +1229,22 @@ class BaseController extends Controller
     public function featureFailure()
     {
         return response()->json(['message' => 'Upgrade to a paid plan for this feature.'], 403);
+    }
+
+
+    /**
+     * GetEncodedFilename
+     *
+     * @param  string $filename
+     * @return string
+     */
+    public function getEncodedFilename(string $filename): string
+    {
+        $ascii_filename = str_replace(['%', '/', '\\'], '', $filename);
+        $ascii_filename = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $ascii_filename);
+
+        $encoded_filename = rawurlencode($filename);
+
+        return "filename=\"$ascii_filename\"; filename*=UTF-8''$encoded_filename";
     }
 }

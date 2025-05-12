@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -19,11 +19,11 @@ class GroupSettingRepository extends BaseRepository
     public function save($data, GroupSetting $group_setting): ?GroupSetting
     {
 
-        if(isset($data['settings']['translations'])) {
+        if (isset($data['settings']['translations'])) {
             unset($data['settings']['translations']);
         }
 
-        if(isset($data['settings']['pdf_variables'])) {
+        if (isset($data['settings']['pdf_variables'])) {
             unset($data['settings']['pdf_variables']);
         }
 

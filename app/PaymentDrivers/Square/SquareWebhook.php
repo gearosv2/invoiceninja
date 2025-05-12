@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -84,7 +84,7 @@ class SquareWebhook implements ShouldQueue
             default => $payment_status = false,
         };
 
-        if(!$payment_status) {
+        if (!$payment_status) {
             nlog("Square Webhook - Payment Status Not Found or not worthy of processing");
             nlog($this->webhook_array);
         }
@@ -92,7 +92,7 @@ class SquareWebhook implements ShouldQueue
         $payment = $this->retrieveOrCreatePayment($payment_id, $payment_status);
 
         /** If the status was pending and now is reporting as Failed / Cancelled - process failure path */
-        if($payment->status_id == Payment::STATUS_PENDING && in_array($payment_status, [Payment::STATUS_CANCELLED, Payment::STATUS_FAILED])) {
+        if ($payment->status_id == Payment::STATUS_PENDING && in_array($payment_status, [Payment::STATUS_CANCELLED, Payment::STATUS_FAILED])) {
             $payment->service()->deletePayment();
 
             if ($this->driver->payment_hash) {
@@ -111,7 +111,7 @@ class SquareWebhook implements ShouldQueue
                 $error
             );
 
-        } elseif($payment->status_id == Payment::STATUS_PENDING && in_array($payment_status, [Payment::STATUS_COMPLETED, Payment::STATUS_COMPLETED])) {
+        } elseif ($payment->status_id == Payment::STATUS_PENDING && in_array($payment_status, [Payment::STATUS_COMPLETED, Payment::STATUS_COMPLETED])) {
             $payment->status_id = Payment::STATUS_COMPLETED;
             $payment->save();
         }
@@ -123,7 +123,7 @@ class SquareWebhook implements ShouldQueue
 
         $payment = Payment::withTrashed()->where('transaction_reference', $payment_reference)->first();
 
-        if($payment) {
+        if ($payment) {
             nlog("payment found, returning");
             return $payment;
         }
@@ -133,7 +133,7 @@ class SquareWebhook implements ShouldQueue
 
         nlog("searching square for payment");
 
-        if($apiResponse->isSuccess()) {
+        if ($apiResponse->isSuccess()) {
 
             nlog("Searching by payment hash");
 

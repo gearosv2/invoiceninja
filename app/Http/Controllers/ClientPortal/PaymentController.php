@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -24,6 +24,7 @@ use App\Models\CompanyGateway;
 use App\Factory\PaymentFactory;
 use App\Utils\Traits\MakesHash;
 use App\Utils\Traits\MakesDates;
+use Illuminate\Routing\Redirector;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Contracts\View\Factory;
@@ -55,7 +56,7 @@ class PaymentController extends Controller
      *
      * @param Request $request
      * @param Payment $payment
-     * @return Factory|View
+     * @return Factory|View|RedirectResponse|Redirector
      */
     public function show(Request $request, Payment $payment)
     {
@@ -64,6 +65,18 @@ class PaymentController extends Controller
         $payment_intent = false;
         $data = false;
         $gateway = false;
+
+        $invoice = $payment->invoices->filter(function ($invoice) {
+            return isset($invoice->backup->redirect);
+        })->first();
+
+        if ($invoice) {
+            $backup = $invoice->backup;
+            $url = $backup->redirect;
+            unset($backup->redirect);
+            $invoice->saveQuietly();
+            return redirect($url);
+        }
 
         if ($payment->gateway_type_id == GatewayType::DIRECT_DEBIT && $payment->type_id == PaymentType::DIRECT_DEBIT) {
             if (method_exists($payment->company_gateway->driver($payment->client), 'getPaymentIntent')) {
@@ -108,12 +121,6 @@ class PaymentController extends Controller
      */
     public function process(Request $request)
     {
-        // $request->validate([
-        //     'contact_first_name' => ['required'],
-        //     'contact_last_name' => ['required'],
-        //     'contact_email' => ['required', 'email'],
-        // ]);
-
         return (new InstantPayment($request))->run();
     }
 
@@ -123,13 +130,7 @@ class PaymentController extends Controller
         $gateway = CompanyGateway::findOrFail($request->input('company_gateway_id'));
         $payment_hash = PaymentHash::with('fee_invoice')->where('hash', $request->payment_hash)->firstOrFail();
 
-        // if($payment_hash)
         $invoice = $payment_hash->fee_invoice;
-        // else
-            // $invoice = Invoice::with('client')->where('id',$payment_hash->fee_invoice_id)->orderBy('id','desc')->first();
-
-        // $invoice = Invoice::with('client')->find($payment_hash->fee_invoice_id);
-
 
         $client = $invoice ? $invoice->client : auth()->guard('contact')->user()->client;
 
@@ -186,7 +187,7 @@ class PaymentController extends Controller
             $payment_hash->payment_id = $payment->id;
             $payment_hash->save();
         }
-
+        $payment->type_id = PaymentType::CREDIT;
         $payment = $payment->service()->applyCredits($payment_hash)->save();
 
         /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\Invoice> $invoices */

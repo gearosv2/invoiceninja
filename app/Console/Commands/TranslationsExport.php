@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -76,6 +76,7 @@ class TranslationsExport extends Command
         'sv',
         'th',
         'tr_TR',
+        'vi',
         'zh_TW',
     ];
 
@@ -138,7 +139,7 @@ class TranslationsExport extends Command
             Storage::disk('local')->makeDirectory("lang/{$lang}");
 
             $translations = Lang::getLoader()->load($lang, 'texts');
-            foreach($translations as $key => $value) {
+            foreach ($translations as $key => $value) {
                 $translations[$key] = html_entity_decode($value);
             }
 

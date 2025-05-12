@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -56,7 +56,7 @@ class BackupUpdate extends Command
     {
         //always return state to first DB
 
-        if(Ninja::isSelfHost()) {
+        if (Ninja::isSelfHost()) {
             return;
         }
 
@@ -175,7 +175,7 @@ class BackupUpdate extends Command
 
                     try {
                         $doc_bin = $document->getFile();
-                    } catch(\Exception $e) {
+                    } catch (\Exception $e) {
                         nlog("Exception:: BackupUpdate::" . $e->getMessage());
                     }
 

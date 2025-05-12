@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -45,7 +45,7 @@ class StoreNoteRequest extends Request
     {
         $input = $this->all();
 
-        if(isset($input['entity_id']) && $input['entity_id'] != null) {
+        if (isset($input['entity_id']) && $input['entity_id'] != null) {
             $input['entity_id'] = $this->decodePrimaryKey($input['entity_id']);
         }
 
@@ -68,11 +68,12 @@ class StoreNoteRequest extends Request
 
     public function getEntity()
     {
-        if(!$this->entity)
+        if (!$this->entity) {
             return false;
+        }
 
         $class = "\\App\\Models\\".ucfirst(Str::camel(rtrim($this->entity, 's')));
-        return $class::withTrashed()->find(is_string($this->entity_id) ? $this->decodePrimaryKey($this->entity_id) :  $this->entity_id);
+        return $class::withTrashed()->find(is_string($this->entity_id) ? $this->decodePrimaryKey($this->entity_id) : $this->entity_id);
 
     }
 

@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -165,8 +165,16 @@ class InvoiceController extends BaseController
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
+
+        /** @var \App\Models\Company $company */
+        $company = auth()->user()->company();
+
         $invoice = InvoiceFactory::create($user->company()->id, $user->id);
         $invoice->date = now()->addSeconds($user->company()->utc_offset())->format('Y-m-d');
+        $invoice->custom_surcharge_tax1 = $company->custom_surcharge_taxes1;
+        $invoice->custom_surcharge_tax2 = $company->custom_surcharge_taxes2;
+        $invoice->custom_surcharge_tax3 = $company->custom_surcharge_taxes3;
+        $invoice->custom_surcharge_tax4 = $company->custom_surcharge_taxes4;
 
         return $this->itemResponse($invoice);
     }
@@ -475,7 +483,10 @@ class InvoiceController extends BaseController
      */
     public function destroy(DestroyInvoiceRequest $request, Invoice $invoice)
     {
-        $this->invoice_repo->delete($invoice);
+
+        if (!$invoice->is_deleted) {
+            $this->invoice_repo->delete($invoice);
+        }
 
         return $this->itemResponse($invoice->fresh());
     }
@@ -493,17 +504,21 @@ class InvoiceController extends BaseController
             return response(['message' => 'Please verify your account to send emails.'], 400);
         }
 
-        if (Ninja::isHosted() && (stripos($action, 'email') !== false) && $user->account->emailQuotaExceeded()) {
+        if (Ninja::isHosted() && $user->account->emailQuotaExceeded()) {
             return response(['message' => ctrans('texts.email_quota_exceeded_subject')], 400);
         }
 
-        if(in_array($request->action, ['auto_bill', 'mark_paid']) && $user->cannot('create', \App\Models\Payment::class)) {
+        if($user->hasExactPermission('disable_emails') && (stripos($action, 'email') !== false)){
+            return response(['message' => ctrans('texts.disable_emails_error')], 400);
+        }
+
+        if (in_array($request->action, ['auto_bill', 'mark_paid']) && $user->cannot('create', \App\Models\Payment::class)) {
             return response(['message' => ctrans('texts.not_authorized'), 'errors' => ['ids' => [ctrans('texts.not_authorized')]]], 422);
         }
 
         $invoices = Invoice::withTrashed()->whereIn('id', $this->transformKeys($ids))->company()->get();
 
-        if ($invoices->count() == 0 ) {
+        if ($invoices->count() == 0) {
             return response()->json(['message' => 'No Invoices Found']);
         }
 
@@ -518,7 +533,7 @@ class InvoiceController extends BaseController
                 }
             });
 
-            ZipInvoices::dispatch($invoices, $invoices->first()->company, auth()->user());
+            ZipInvoices::dispatch($invoices->pluck('id'), $invoices->first()->company, auth()->user());
 
             return response()->json(['message' => ctrans('texts.sent_message')], 200);
         }
@@ -533,16 +548,47 @@ class InvoiceController extends BaseController
         }
 
         if ($action == 'bulk_print' && $user->can('view', $invoices->first())) {
-            $paths = $invoices->map(function ($invoice) {
-                return (new \App\Jobs\Entity\CreateRawPdf($invoice->invitations->first()))->handle();
-            });
+            $start = microtime(true);
 
-            return response()->streamDownload(function () use ($paths) {
-                echo $merge = (new PdfMerge($paths->toArray()))->run();
-            }, 'print.pdf', ['Content-Type' => 'application/pdf']);
+            // 2025-01-22 Legacy implementation of bulk print
+            // $paths = $invoices->map(function ($invoice) {
+            //     return (new \App\Jobs\Entity\CreateRawPdf($invoice->invitations->first()))->handle();
+            // });
+
+            // return response()->streamDownload(function () use ($paths) {
+            //     echo $merge = (new PdfMerge($paths->toArray()))->run();
+            // }, 'print.pdf', ['Content-Type' => 'application/pdf']);
+
+            $batch_id = (new \App\Jobs\Invoice\PrintEntityBatch(Invoice::class, $invoices->pluck('id')->toArray(), $user->company()->db))->handle();
+            $batch = \Illuminate\Support\Facades\Bus::findBatch($batch_id);
+            $batch_key = $batch->name;          
+
+            $finished = false;
+
+            do{
+                usleep(500000);
+                $batch = \Illuminate\Support\Facades\Bus::findBatch($batch_id);
+                $finished = $batch->finished();
+            }while(!$finished);
+            
+            $paths = $invoices->map(function ($invoice) use($batch_key){
+                return \Illuminate\Support\Facades\Cache::pull("{$batch_key}-{$invoice->id}");
+            })->filter(function ($value) {
+                return !is_null($value);
+            })->toArray();
+
+            $mergedPdf = (new PdfMerge($paths))->run();
+
+            return response()->streamDownload(function () use ($mergedPdf) {
+                echo $mergedPdf;
+            }, 'print.pdf', [
+                'Content-Type' => 'application/pdf',
+                'Cache-Control:' => 'no-cache',
+                'Server-Timing' => (string)(microtime(true) - $start)
+            ]);
         }
 
-        if($action == 'template' && $user->can('view', $invoices->first())) {
+        if ($action == 'template' && $user->can('view', $invoices->first())) {
 
             $hash_or_response = $request->boolean('send_email') ? 'email sent' : \Illuminate\Support\Str::uuid();
 
@@ -560,10 +606,10 @@ class InvoiceController extends BaseController
             return response()->json(['message' => $hash_or_response], 200);
         }
 
-        if($action == 'set_payment_link' && $request->has('subscription_id')) {
+        if ($action == 'set_payment_link' && $request->has('subscription_id')) {
 
             $invoices->each(function ($invoice) use ($user, $request) {
-                if($user->can('edit', $invoice)) {
+                if ($user->can('edit', $invoice)) {
                     $invoice->service()->setPaymentLink($request->subscription_id)->save();
                 }
             });
@@ -571,6 +617,19 @@ class InvoiceController extends BaseController
             return $this->listResponse(Invoice::withTrashed()->whereIn('id', $this->transformKeys($ids))->company());
         }
 
+        if (in_array($action, ['email','send_email'])) {
+
+            $invoice = $invoices->first();
+
+            $invoices->filter(function ($invoice) use ($user) {
+                return $user->can('edit', $invoice);
+            })->each(function ($invoice) use ($user, $request) {
+                $invoice->service()->sendEmail(email_type: $request->input('email_type', $invoice->calculateTemplate('invoice')));
+            });
+
+            return $this->listResponse(Invoice::withTrashed()->whereIn('id', $this->transformKeys($ids))->company());
+
+        }
         /*
          * Send the other actions to the switch
          */
@@ -741,19 +800,6 @@ class InvoiceController extends BaseController
                 }
                 break;
 
-            case 'email':
-            case 'send_email':
-                //check query parameter for email_type and set the template else use calculateTemplate
-
-                $template = request()->has('email_type') ? request()->input('email_type') : $invoice->calculateTemplate('invoice');
-
-                BulkInvoiceJob::dispatch($invoice, $template);
-
-                if (! $bulk) {
-                    return response()->json(['message' => 'email sent'], 200);
-                }
-                break;
-
             default:
                 return response()->json(['message' => ctrans('texts.action_unavailable', ['action' => $action])], 400);
         }
@@ -804,6 +850,7 @@ class InvoiceController extends BaseController
      */
     public function downloadPdf($invitation_key)
     {
+
         $invitation = $this->invoice_repo->getInvitationByKey($invitation_key);
 
         if (! $invitation) {
@@ -827,6 +874,7 @@ class InvoiceController extends BaseController
         return response()->streamDownload(function () use ($file) {
             echo $file;
         }, $file_name, $headers);
+
     }
 
     /**

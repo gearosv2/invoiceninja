@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -51,7 +51,7 @@ class ValidProjectForClient implements Rule
             return false;
         }
 
-        if(!isset($this->input['client_id'])) {
+        if (!isset($this->input['client_id'])) {
             $this->message = 'No Client ID provided.';
             return false;
         }

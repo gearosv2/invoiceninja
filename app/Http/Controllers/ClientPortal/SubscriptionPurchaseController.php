@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -77,7 +77,6 @@ class SubscriptionPurchaseController extends Controller
 
     public function v3(Subscription $subscription, Request $request)
     {
-        // Todo: Prerequirement checks for subscription.
 
         return view('billing-portal.v3.index', [
             'subscription' => $subscription,
@@ -94,7 +93,7 @@ class SubscriptionPurchaseController extends Controller
      */
     private function setLocale(string $locale): string
     {
-        
+
         /** @var \Illuminate\Support\Collection<\App\Models\Language> */
         $languages = app('languages');
 
@@ -104,6 +103,6 @@ class SubscriptionPurchaseController extends Controller
         });
 
         return $record ? $record->locale : 'en';
-        
+
     }
 }

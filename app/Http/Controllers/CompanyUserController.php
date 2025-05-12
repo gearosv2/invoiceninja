@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -127,7 +127,7 @@ class CompanyUserController extends BaseController
             $company_user->settings = $request->input('company_user')['settings'];
             $company_user->notifications = $request->input('company_user')['notifications'];
 
-            if(isset($request->input('company_user')['react_settings'])) {
+            if (isset($request->input('company_user')['react_settings'])) {
                 $company_user->react_settings = $request->input('company_user')['react_settings'];
             }
 

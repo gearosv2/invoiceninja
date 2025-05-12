@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -68,7 +68,7 @@ class SendTestEmails extends Command
             });
 
 
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->info("Error sending email: " . $e->getMessage());
         }
     }

@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -19,17 +19,17 @@ class InvoiceDecorator extends Decorator implements DecoratorInterface
     {
         $invoice = false;
 
-        if($entity instanceof Invoice) {
+        if ($entity instanceof Invoice) {
             $invoice = $entity;
-        } elseif($entity->invoice) {
+        } elseif ($entity->invoice) {
             $invoice = $entity->invoice;
-        } elseif(method_exists($entity, 'invoices') && $entity->invoices()->exists()) {
+        } elseif (method_exists($entity, 'invoices') && $entity->invoices()->exists()) {
             $invoice = $entity->invoices()->first();
         }
 
-        if($invoice && method_exists($this, $key)) {
+        if ($invoice && method_exists($this, $key)) {
             return $this->{$key}($invoice);
-        } elseif($invoice && ($invoice->{$key} ?? false)) {
+        } elseif ($invoice && ($invoice->{$key} ?? false)) {
             return $invoice->{$key};
         }
 

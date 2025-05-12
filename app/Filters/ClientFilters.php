@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -124,26 +124,34 @@ class ClientFilters extends QueryFilters
      */
     public function filter(string $filter = ''): Builder
     {
+
         if (strlen($filter) == 0) {
             return $this->builder;
         }
 
-        return  $this->builder->where(function ($query) use ($filter) {
-            $query->where('name', 'like', '%'.$filter.'%')
-                          ->orWhere('id_number', 'like', '%'.$filter.'%')
-                          ->orWhere('number', 'like', '%'.$filter.'%')
+        $searchTerms = array_filter(explode(' ', $filter));
 
-                          ->orWhereHas('contacts', function ($query) use ($filter) {
-                              $query->where('first_name', 'like', '%'.$filter.'%');
-                              $query->orWhere('last_name', 'like', '%'.$filter.'%');
-                              $query->orWhere('email', 'like', '%'.$filter.'%');
-                              $query->orWhere('phone', 'like', '%'.$filter.'%');
-                          })
-                          ->orWhere('custom_value1', 'like', '%'.$filter.'%')
-                          ->orWhere('custom_value2', 'like', '%'.$filter.'%')
-                          ->orWhere('custom_value3', 'like', '%'.$filter.'%')
-                          ->orWhere('custom_value4', 'like', '%'.$filter.'%');
+        return $this->builder->where(function ($query) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $query->where(function ($subQuery) use ($term) {
+                    $subQuery->where('name', 'like', '%'.$term.'%')
+                        ->orWhere('id_number', 'like', '%'.$term.'%')
+                        ->orWhere('number', 'like', '%'.$term.'%')
+                        ->orWhereHas('contacts', function ($contactQuery) use ($term) {
+                            $contactQuery->where('first_name', 'like', '%'.$term.'%')
+                                ->orWhere('last_name', 'like', '%'.$term.'%')
+                                ->orWhere('email', 'like', '%'.$term.'%')
+                                ->orWhere('phone', 'like', '%'.$term.'%');
+                        })
+                        ->orWhere('custom_value1', 'like', '%'.$term.'%')
+                        ->orWhere('custom_value2', 'like', '%'.$term.'%')
+                        ->orWhere('custom_value3', 'like', '%'.$term.'%')
+                        ->orWhere('custom_value4', 'like', '%'.$term.'%');
+                });
+            }
         });
+
+
     }
 
     /**
@@ -156,11 +164,11 @@ class ClientFilters extends QueryFilters
     {
         $sort_col = explode('|', $sort);
 
-        if (!is_array($sort_col) || count($sort_col) != 2) {
+        if (!is_array($sort_col) || count($sort_col) != 2 || !in_array($sort_col[0], \Illuminate\Support\Facades\Schema::getColumnListing($this->builder->getModel()->getTable()))) {
             return $this->builder;
         }
-
-        if($sort_col[0] == 'documents') {
+            
+        if ($sort_col[0] == 'documents') {
             return $this->builder;
         }
 
@@ -170,7 +178,7 @@ class ClientFilters extends QueryFilters
 
         $dir = ($sort_col[1] == 'asc') ? 'asc' : 'desc';
 
-        if($sort_col[0] == 'number') {
+        if ($sort_col[0] == 'number') {
             return $this->builder->orderByRaw("REGEXP_REPLACE(number,'[^0-9]+','')+0 " . $dir);
         }
 

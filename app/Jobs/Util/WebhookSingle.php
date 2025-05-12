@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -130,7 +130,7 @@ class WebhookSingle implements ShouldQueue
                 $this->resolveClient(),
                 $this->company
             ))->handle();
-        } catch(\GuzzleHttp\Exception\ConnectException $e) {
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
             nlog("connection problem");
             nlog($e->getCode());
             nlog($e->getMessage());

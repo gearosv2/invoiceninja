@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -46,13 +46,13 @@ class ChangePlanInvoice extends AbstractService
 
         $invoice = $this->generateInvoice($refund);
 
-        if($refund >= $new_charge) {
+        if ($refund >= $new_charge) {
             $invoice = $invoice->markPaid()->save();
 
             //generate new recurring invoice at this point as we know the user has succeeded with their upgrade.
         }
 
-        if($refund > $new_charge) {
+        if ($refund > $new_charge) {
             return $this->generateCredit($refund - $new_charge);
         }
 

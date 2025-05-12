@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -52,7 +52,7 @@ class CheckoutWebhook implements ShouldQueue
 
         $this->company_gateway = CompanyGateway::withTrashed()->find($this->company_gateway_id);
 
-        if(!isset($this->webhook_array['type'])) {
+        if (!isset($this->webhook_array['type'])) {
             nlog("Checkout Webhook type not set");
         }
 
@@ -77,17 +77,17 @@ class CheckoutWebhook implements ShouldQueue
 
         $payment = Payment::query()->withTrashed()->where('transaction_reference', $payment_object['id'])->first();
 
-        if($payment && $payment->status_id == Payment::STATUS_COMPLETED) {
+        if ($payment && $payment->status_id == Payment::STATUS_COMPLETED) {
             return;
         }
 
-        if($payment) {
+        if ($payment) {
             $payment->status_id = Payment::STATUS_COMPLETED;
             $payment->save();
             return;
         }
 
-        if(isset($this->webhook_array['metadata'])) {
+        if (isset($this->webhook_array['metadata'])) {
 
             $metadata = $this->webhook_array['metadata'];
 

@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -59,17 +59,19 @@ class CopyDocs implements ShouldQueue
 
                     $new_hash = \Illuminate\Support\Str::random(32) . "." . $extension;
 
+                    $relative_path = "{$this->entity->company->company_key}/documents/{$new_hash}";
+
                     Storage::disk($document->disk)->put(
-                        "{$this->entity->company->company_key}/documents/{$new_hash}",
+                        $relative_path,
                         $file,
                     );
 
-                    $instance = Storage::disk($document->disk)->path("{$this->entity->company->company_key}/documents/{$new_hash}");
+                    // $instance = Storage::disk($document->disk)->path("{$this->entity->company->company_key}/documents/{$new_hash}");
 
                     $new_doc = new Document();
                     $new_doc->user_id = $this->entity->user_id;
                     $new_doc->company_id = $this->entity->company_id;
-                    $new_doc->url = $instance;
+                    $new_doc->url = $relative_path;
                     $new_doc->name = $document->name;
                     $new_doc->type = $extension;
                     $new_doc->disk = $document->disk;

@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -58,11 +58,11 @@ class StoreTaskRequest extends Request
 
         $rules['time_log'] = ['bail',function ($attribute, $values, $fail) {
 
-            if(is_string($values)) {
+            if (is_string($values)) {
                 $values = json_decode($values, true);
             }
 
-            if(!is_array($values)) {
+            if (!is_array($values)) {
                 $fail('The '.$attribute.' must be a valid array.');
                 return;
             }
@@ -123,7 +123,7 @@ class StoreTaskRequest extends Request
             }
         }
 
-        if(!isset($input['time_log']) || empty($input['time_log']) || $input['time_log'] == '{}') {
+        if (!isset($input['time_log']) || empty($input['time_log']) || $input['time_log'] == '{}') {
             $input['time_log'] = json_encode([]);
         }
 

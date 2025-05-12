@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -31,12 +31,8 @@ class TwigLint implements ValidationRule
         try {
             $twig->parse($twig->tokenize(new \Twig\Source(preg_replace('/<!--.*?-->/s', '', $value), '')));
         } catch (\Twig\Error\SyntaxError $e) {
-            // echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-            nlog($e->getMessage());
             $fail($e->getMessage());
-
         }
-
 
     }
 }

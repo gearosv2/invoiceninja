@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -170,7 +170,7 @@ class AuthorizePaymentMethod
             $billto->setState(substr($this->authorize->client->state, 0, 40));
             $billto->setZip(substr($this->authorize->client->postal_code, 0, 20));
 
-            if(isset($contact->email) && str_contains($contact->email, '@')) {
+            if (isset($contact->email) && str_contains($contact->email, '@')) {
                 $billto->setEmail($contact->email);
             }
 

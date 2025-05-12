@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -59,7 +59,7 @@ class ProcessPostmarkWebhook implements ShouldQueue
      * Create a new job instance.
      *
      */
-    public function __construct(private array $request)
+    public function __construct(private array $request, private string $security_token)
     {
     }
 
@@ -68,7 +68,10 @@ class ProcessPostmarkWebhook implements ShouldQueue
         return SystemLog::query()
             ->where('company_id', $this->invitation->company_id)
             ->where('type_id', SystemLog::TYPE_WEBHOOK_RESPONSE)
-            ->whereJsonContains('log', ['MessageID' => $message_id])
+            ->where('category_id', SystemLog::CATEGORY_MAIL)
+            // ->where('client_id', $this->invitation->contact->client_id)
+            // ->whereJsonContains('log', ['MessageID' => $message_id])
+            ->where('log->MessageID', $message_id)
             ->orderBy('id', 'desc')
             ->first();
 
@@ -163,7 +166,7 @@ class ProcessPostmarkWebhook implements ShouldQueue
     private function processOpen()
     {
         $this->invitation->opened_date = now();
-        $this->invitation->save();
+        $this->invitation->saveQuietly();
 
         $data = array_merge($this->request, ['history' => $this->fetchMessage()]);
 
@@ -203,7 +206,7 @@ class ProcessPostmarkWebhook implements ShouldQueue
     private function processDelivery()
     {
         $this->invitation->email_status = 'delivered';
-        $this->invitation->save();
+        $this->invitation->saveQuietly();
 
         $data = array_merge($this->request, ['history' => $this->fetchMessage()]);
 
@@ -255,7 +258,7 @@ class ProcessPostmarkWebhook implements ShouldQueue
     private function processBounce()
     {
         $this->invitation->email_status = 'bounced';
-        $this->invitation->save();
+        $this->invitation->saveQuietly();
 
         $bounce = new EmailBounce(
             $this->request['Tag'],
@@ -306,7 +309,7 @@ class ProcessPostmarkWebhook implements ShouldQueue
     private function processSpamComplaint()
     {
         $this->invitation->email_status = 'spam';
-        $this->invitation->save();
+        $this->invitation->saveQuietly();
 
         $spam = new EmailSpam(
             $this->request['Tag'],
@@ -353,14 +356,12 @@ class ProcessPostmarkWebhook implements ShouldQueue
     public function getRawMessage(string $message_id)
     {
 
-        $postmark_secret = !empty($this->company->settings->postmark_secret) ? $this->company->settings->postmark_secret : config('services.postmark.token');
-
-        $postmark = new PostmarkClient($postmark_secret);
+        $postmark = new PostmarkClient($this->security_token);
         $messageDetail = $postmark->getOutboundMessageDetails($message_id);
 
         try {
             $messageDetail = $postmark->getOutboundMessageDetails($message_id);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             $postmark_secret = config('services.postmark-outlook.token');
             $postmark = new PostmarkClient($postmark_secret);
@@ -397,13 +398,11 @@ class ProcessPostmarkWebhook implements ShouldQueue
 
         try {
 
-            $postmark_secret = !empty($this->company->settings->postmark_secret) ? $this->company->settings->postmark_secret : config('services.postmark.token');
-
-            $postmark = new PostmarkClient($postmark_secret);
+            $postmark = new PostmarkClient($this->security_token);
 
             try {
                 $messageDetail = $postmark->getOutboundMessageDetails($this->request['MessageID']);
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
 
                 $postmark_secret = config('services.postmark-outlook.token');
                 $postmark = new PostmarkClient($postmark_secret);
@@ -442,4 +441,10 @@ class ProcessPostmarkWebhook implements ShouldQueue
 
         }
     }
+
+    public function middleware()
+    {
+        return [new \Illuminate\Queue\Middleware\WithoutOverlapping($this->request['Tag'])];
+    }
+
 }

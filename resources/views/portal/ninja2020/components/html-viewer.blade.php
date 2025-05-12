@@ -161,7 +161,7 @@ span {
 
     </div>
 
-    @if(strlen($entity->public_notes) > 3)
+    @if(strlen($entity->public_notes ?? '') > 3)
     <div x-data="{ show_notes: false }" class="mb-10 mr-5 ml-5 flex flex-col items-end">
         
         <button @click="show_notes = !show_notes" :aria-expanded="show_notes ? 'true' : 'false'" :class="{ 'active': show_notes }" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
@@ -170,13 +170,13 @@ span {
         </button>
         
         <div id="notes" class="py-10 border-b-2 border-fuschia-600"  x-show="show_notes">     
-            {!! html_entity_decode(e($entity->public_notes)) !!}
+            {!! html_entity_decode(e($public_notes)) !!}
         </div>
 
     </div>
     @endif
 
-    @if(strlen($entity->terms) > 3)
+    @if(strlen($entity->terms ?? '') > 3)
     <div x-data="{ show_terms: false }" class="mb-10 mr-5 ml-5 flex flex-col items-end">
 
         <button @click="show_terms = !show_terms" :aria-expanded="show_terms ? 'true' : 'false'" :class="{ 'active': show_terms }" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
@@ -185,13 +185,13 @@ span {
         </button>
 
         <div id="terms" class="py-10 border-b-2 border-fuschia-600"  x-show="show_terms">
-            {!! html_entity_decode($entity->terms) !!}
+            {!! html_entity_decode($terms) !!}
         </div>
 
     </div>
     @endif
 
-    @if(strlen($entity->footer) > 3)
+    @if(strlen($entity->footer ?? '') > 3)
     <div x-data="{ show_footer: false }" class="mb-10 mr-5 ml-5 flex flex-col items-end">
 
         <button @click="show_footer = !show_footer" :aria-expanded="show_footer ? 'true' : 'false'" :class="{ 'active': show_footer }" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">

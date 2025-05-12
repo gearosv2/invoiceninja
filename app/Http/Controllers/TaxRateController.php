@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -434,12 +434,12 @@ class TaxRateController extends BaseController
         $tax_rates->each(function ($tax_rate, $key) use ($action, $user) {
             if ($user->can('edit', $tax_rate)) {
 
-                if(in_array($action, ['archive','delete'])) {
+                if (in_array($action, ['archive','delete'])) {
                     $settings = $user->company()->settings;
 
-                    foreach(['tax_name1','tax_name2','tax_name3'] as $tax_name) {
+                    foreach (['tax_name1','tax_name2','tax_name3'] as $tax_name) {
 
-                        if($settings->{$tax_name} == $tax_rate->name) {
+                        if ($settings->{$tax_name} == $tax_rate->name) {
                             $settings->{$tax_name} = '';
                             $settings->{str_replace("name", "rate", $tax_name)} = '';
                         }

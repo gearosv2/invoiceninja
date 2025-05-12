@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -83,12 +83,16 @@ class SendRemindersCron extends Command
                          //check if this reminder needs to be emailed
                          if (in_array($reminder_template, ['reminder1', 'reminder2', 'reminder3']) && $invoice->client->getSetting('enable_'.$reminder_template)) {
                              $invoice->invitations->each(function ($invitation) use ($invoice, $reminder_template) {
-                                 EmailEntity::dispatch($invitation, $invitation->company, $reminder_template);
+                                 EmailEntity::dispatch($invitation->withoutRelations(), $invitation->company->db, $reminder_template);
                                  nlog("Firing reminder email for invoice {$invoice->number}");
                              });
 
                              if ($invoice->invitations->count() > 0) {
-                                 event(new InvoiceWasEmailed($invoice->invitations->first(), $invoice->company, Ninja::eventVars(), $reminder_template));
+                                //  event(new InvoiceWasEmailed($invoice->invitations->first(), $invoice->company, Ninja::eventVars(), $reminder_template));
+                                
+event(new \App\Events\General\EntityWasEmailed($invoice->invitations->first(), $invoice->company, Ninja::eventVars(auth()->user() ? auth()->user()->id : null), $reminder_template));
+
+                                 $invoice->entityEmailEvent($invoice->invitations->first(), $reminder_template);
                              }
                          }
                          $invoice->service()->setReminder()->save();

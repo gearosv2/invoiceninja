@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -93,7 +93,7 @@ trait Utilities
             $error_message = 'Error processing payment.';
         }
 
-        if(isset($_payment['actions'][0]['response_summary']) ?? false) {
+        if (isset($_payment['actions'][0]['response_summary']) ?? false) {
             $error_message = $_payment['actions'][0]['response_summary'];
         }
 

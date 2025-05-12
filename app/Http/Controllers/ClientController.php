@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -232,7 +232,7 @@ class ClientController extends BaseController
                          ->whereIn('id', $request->ids)
                          ->get();
 
-        if($action == 'template' && $user->can('view', $clients->first())) {
+        if ($action == 'template' && $user->can('view', $clients->first())) {
 
             $hash_or_response = $request->boolean('send_email') ? 'email sent' : \Illuminate\Support\Str::uuid();
 
@@ -250,7 +250,7 @@ class ClientController extends BaseController
             return response()->json(['message' => $hash_or_response], 200);
         }
 
-        if($action == 'assign_group' && $user->can('edit', $clients->first())) {
+        if ($action == 'assign_group' && $user->can('edit', $clients->first())) {
 
             $this->client_repo->assignGroup($clients, $request->group_settings_id);
 
@@ -258,7 +258,7 @@ class ClientController extends BaseController
 
         }
 
-        if($action == 'bulk_update' && $user->can('edit', $clients->first())) {
+        if ($action == 'bulk_update' && $user->can('edit', $clients->first())) {
 
             $clients = Client::withTrashed()
                     ->company()
@@ -314,7 +314,7 @@ class ClientController extends BaseController
         $client->documents->each(function ($document) {
             try {
                 Storage::disk(config('filesystems.default'))->delete($document->url);
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 nlog($e->getMessage());
             }
         });
@@ -351,7 +351,7 @@ class ClientController extends BaseController
             return response()->json(['message' => "Client not found"], 400);
         }
 
-        if($m_client->id == $client->id) {
+        if ($m_client->id == $client->id) {
             return response()->json(['message' => "Attempting to merge the same client is not possible."], 400);
         }
 
@@ -369,7 +369,7 @@ class ClientController extends BaseController
      */
     public function updateTaxData(PurgeClientRequest $request, Client $client)
     {
-        if($client->company->account->isPaid()) {
+        if ($client->company->account->isPaid()) {
             (new UpdateTaxData($client, $client->company))->handle();
         }
 
@@ -388,7 +388,7 @@ class ClientController extends BaseController
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if(stripos($bounce_id, '-') !== false) {
+        if (stripos($bounce_id, '-') !== false) {
             $log =
                 SystemLog::query()
                 ->where('company_id', $user->company()->id)
@@ -400,16 +400,16 @@ class ClientController extends BaseController
 
             $resolved_bounce_id = false;
 
-            if($log && ($log?->log['ID'] ?? false)) {
+            if ($log && ($log?->log['ID'] ?? false)) {
                 $resolved_bounce_id = $log->log['ID'] ?? false;
             }
 
-            if(!$resolved_bounce_id) {
-                $ppwebhook = new ProcessPostmarkWebhook([]);
+            if (!$resolved_bounce_id) {
+                $ppwebhook = new ProcessPostmarkWebhook([], config('services.postmark.token'));
                 $resolved_bounce_id = $ppwebhook->getBounceId($bounce_id);
             }
 
-            if(!$resolved_bounce_id) {
+            if (!$resolved_bounce_id) {
                 return response()->json(['message' => 'Bounce ID not found'], 400);
             }
 
@@ -417,6 +417,18 @@ class ClientController extends BaseController
 
             $record = $log->log;
             $record['ID'] = '';
+
+            //2025-01-15 15:00:00 - unset the bounce ID here.
+            $events = $record['history']['events'];
+
+            foreach($events as &$event)
+            {
+                $event['bounce_id'] = "";
+            }
+            unset($event);
+
+            $record['history']['events'] = $events;
+
             $log->log = $record;
             $log->save();
 
@@ -429,7 +441,7 @@ class ClientController extends BaseController
             /** @var ?\Postmark\Models\DynamicResponseModel $response */
             $response = $postmark->activateBounce((int)$bounce_id);
 
-            if($response && $response?->Message == 'OK' && !$response->Bounce->Inactive && $response->Bounce->Email) { // @phpstan-ignore-line
+            if ($response && $response?->Message == 'OK' && !$response->Bounce->Inactive && $response->Bounce->Email) { // @phpstan-ignore-line
 
                 $email =  $response->Bounce->Email;
                 //remove email from quarantine. //@TODO
@@ -437,7 +449,7 @@ class ClientController extends BaseController
 
             return response()->json(['message' => 'Success'], 200);
 
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             return response()->json(['message' => $e->getMessage(), 400]);
 

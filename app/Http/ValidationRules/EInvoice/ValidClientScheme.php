@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *1`
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -34,8 +34,7 @@ class ValidClientScheme implements ValidationRule, ValidatorAwareRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
 
-        if(isset($value['Invoice']))
-        {
+        if (isset($value['Invoice'])) {
             $r = new EInvoice();
             $errors = $r->validateRequest($value['Invoice'], ClientLevel::class);
 

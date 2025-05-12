@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -58,7 +58,7 @@ class ClientWasArchived implements ShouldBroadcast
 
     public function broadcastWith()
     {
-        
+
         $manager = new Manager();
         $manager->setSerializer(new ArraySerializer());
         $class = sprintf('App\\Transformers\\%sTransformer', class_basename($this->client));
@@ -79,7 +79,7 @@ class ClientWasArchived implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        
+
         return [
             new PrivateChannel("company-{$this->company->company_key}"),
         ];

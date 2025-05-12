@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -42,8 +42,9 @@ class CreateInvitations extends AbstractService
     public function run()
     {
 
-        if(!$this->purchase_order->vendor)
+        if (!$this->purchase_order->vendor) {
             return $this->purchase_order;
+        }
 
         $contacts = $this->purchase_order->vendor->contacts()->get();
 

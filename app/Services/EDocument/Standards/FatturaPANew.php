@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -237,7 +237,7 @@ class FatturaPANew extends AbstractService
         }
 
         //totals
-        if($this->invoice->tax_rate1 > $tax_rate_level) {
+        if ($this->invoice->tax_rate1 > $tax_rate_level) {
             $tax_rate_level = sprintf('%0.2f', $this->invoice->tax_rate1);
         }
 

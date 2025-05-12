@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -155,7 +155,7 @@ class StoreShopClientRequest extends Request
 
     private function getCountryCode($country_code)
     {
-        
+
         /** @var \Illuminate\Support\Collection<\App\Models\Country> */
         $countries = app('countries');
 
@@ -168,7 +168,7 @@ class StoreShopClientRequest extends Request
 
     private function getCurrencyCode($code)
     {
-        
+
         /** @var \Illuminate\Support\Collection<\App\Models\Country> */
         $currencies = app('currencies');
 

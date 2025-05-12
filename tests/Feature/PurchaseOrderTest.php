@@ -37,7 +37,7 @@ class PurchaseOrderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->faker = \Faker\Factory::create();
 
         $this->makeTestData();
@@ -57,9 +57,9 @@ class PurchaseOrderTest extends TestCase
 
         $this->assertEquals($expense->project_id, $this->project->id);
         $this->assertEquals($expense->client_id, $p->project->client_id);
-        
+
     }
-    
+
 
     public function testPurchaseOrderHistory()
     {
@@ -67,7 +67,7 @@ class PurchaseOrderTest extends TestCase
         event(new PurchaseOrderWasCreated($this->purchase_order, $this->company, Ninja::eventVars($this->company, $this->user)));
 
         $ar = new ActivityRepository();
-        $fields = new \stdClass;
+        $fields = new \stdClass();
         $fields->user_id = $this->purchase_order->user_id;
         $fields->vendor_id = $this->purchase_order->vendor_id;
         $fields->company_id = $this->purchase_order->company_id;
@@ -101,14 +101,6 @@ class PurchaseOrderTest extends TestCase
             'vendor_id' => $this->vendor->id,
         ]);
 
-        // PurchaseOrderInvitation::factory()->create([
-        //     'user_id' => $this->user->id,
-        //     'company_id' => $this->company->id,
-        //     'vendor_contact_id' => $this->vendor->contacts()->first()->id,
-        //     'purchase_order_id' => $po->id,
-        // ]);
-
-
         $po->service()->createInvitations()->save();
 
         $i = $po->invitations->first();
@@ -121,23 +113,25 @@ class PurchaseOrderTest extends TestCase
         $response = $this->withHeaders([
             'X-API-SECRET' => config('ninja.api_secret'),
             'X-API-TOKEN' => $this->token,
-        ])->post("/api/v1/purchase_orders/bulk", $data)
-        ->assertStatus(200);
+        ])->postJson("/api/v1/purchase_orders/bulk", $data);
+
+        $response->assertStatus(200);
 
 
         $data = [
-            'ids' =>[$po->hashed_id],
+            'ids' => [$po->hashed_id],
             'action' => 'archive',
         ];
 
         $response = $this->withHeaders([
             'X-API-SECRET' => config('ninja.api_secret'),
             'X-API-TOKEN' => $this->token,
-        ])->post("/api/v1/purchase_orders/bulk", $data)
-        ->assertStatus(200);
+        ])->postJson("/api/v1/purchase_orders/bulk", $data);
+        
+        $response->assertStatus(200);
 
         $data = [
-            'ids' =>[$po->hashed_id],
+            'ids' => [$po->hashed_id],
             'action' => 'restore',
         ];
 
@@ -148,7 +142,7 @@ class PurchaseOrderTest extends TestCase
         ->assertStatus(200);
 
         $data = [
-            'ids' =>[$po->hashed_id],
+            'ids' => [$po->hashed_id],
             'action' => 'delete',
         ];
 
@@ -160,7 +154,7 @@ class PurchaseOrderTest extends TestCase
 
 
         $data = [
-            'ids' =>[$po->hashed_id],
+            'ids' => [$po->hashed_id],
             'action' => 'restore',
         ];
 
@@ -172,7 +166,7 @@ class PurchaseOrderTest extends TestCase
 
 
         $data = [
-            'ids' =>[],
+            'ids' => [],
             'action' => 'archive',
         ];
 
@@ -183,7 +177,7 @@ class PurchaseOrderTest extends TestCase
         ->assertStatus(302);
 
         $data = [
-            'ids' =>[$po->hashed_id],
+            'ids' => [$po->hashed_id],
             'action' => '',
         ];
 
@@ -195,7 +189,7 @@ class PurchaseOrderTest extends TestCase
 
 
         $data = [
-            'ids' =>[$po->hashed_id],
+            'ids' => [$po->hashed_id],
             'action' => 'molly',
         ];
 

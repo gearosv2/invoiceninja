@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *1`
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -24,7 +24,6 @@ use Illuminate\Contracts\Validation\ValidatorAwareRule;
  */
 class ValidCompanyScheme implements ValidationRule, ValidatorAwareRule
 {
- 
     /**
      * The validator instance.
      *
@@ -35,11 +34,10 @@ class ValidCompanyScheme implements ValidationRule, ValidatorAwareRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
 
-        if(isset($value['Invoice']))
-        {
+        if (isset($value['Invoice'])) {
             $r = new EInvoice();
             $errors = $r->validateRequest($value['Invoice'], CompanyLevel::class);
-            
+
             foreach ($errors as $key => $msg) {
 
                 $this->validator->errors()->add(
@@ -49,16 +47,16 @@ class ValidCompanyScheme implements ValidationRule, ValidatorAwareRule
 
             }
         }
-    
+
     }
- 
+
     /**
      * Set the current validator.
      */
     public function setValidator(Validator $validator): static
     {
         $this->validator = $validator;
- 
+
         return $this;
     }
 

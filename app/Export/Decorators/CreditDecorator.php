@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -19,15 +19,15 @@ class CreditDecorator implements DecoratorInterface
     {
         $credit = false;
 
-        if($entity instanceof Credit) {
+        if ($entity instanceof Credit) {
             $credit = $entity;
-        } elseif($entity->credit) {
+        } elseif ($entity->credit) {
             $credit = $entity->credit;
         }
 
-        if($credit && method_exists($this, $key)) {
+        if ($credit && method_exists($this, $key)) {
             return $this->{$key}($credit);
-        } elseif($credit && ($credit->{$key} ?? false)) {
+        } elseif ($credit && ($credit->{$key} ?? false)) {
             return $credit->{$key};
         }
 

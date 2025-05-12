@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -13,13 +13,14 @@ namespace App\Mail\Admin;
 
 use App\Models\ClientContact;
 use App\Models\Company;
+use App\Models\VendorContact;
 use App\Utils\Ninja;
 use Illuminate\Support\Facades\App;
 
 class ClientUnsubscribedObject
 {
     public function __construct(
-        public ClientContact $contact,
+        public ClientContact | VendorContact$contact,
         public Company $company,
         private bool $use_react_link = false
     ) {

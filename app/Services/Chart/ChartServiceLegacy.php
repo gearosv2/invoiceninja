@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -53,7 +53,7 @@ class ChartServiceLegacy
         /* Merge and filter by unique */
         $currencies = $currencies->merge($expense_currencies)->unique();
 
-        
+
         /** @var \Illuminate\Support\Collection<\App\Models\Currency> */
         $cache_currencies = app('currencies');
 
@@ -137,7 +137,7 @@ class ChartServiceLegacy
 
     private function addCurrencyCodes($data_set): array
     {
-        
+
         /** @var \Illuminate\Support\Collection<\App\Models\Currency> */
         $currencies = app('currencies');
 

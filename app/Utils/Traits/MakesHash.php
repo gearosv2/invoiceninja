@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -70,9 +70,9 @@ trait MakesHash
 
             $decoded_array = $hashids->decode($value);
 
-            if(isset($decoded_array[0]) ?? false) {
+            if (isset($decoded_array[0]) ?? false) {
                 return $decoded_array[0];
-            } elseif($return_string_failure) {
+            } elseif ($return_string_failure) {
                 return "Invalid Primary Key";
             } else {
                 throw new \Exception('Invalid Primary Key');

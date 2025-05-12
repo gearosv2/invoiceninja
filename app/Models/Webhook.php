@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -176,7 +176,10 @@ class Webhook extends BaseModel
 
     public const EVENT_REMIND_QUOTE = 64;
 
+    public const EVENT_ACCEPTED_PURCHASE_ORDER = 65;
+
     public static $valid_events = [
+        self::EVENT_ACCEPTED_PURCHASE_ORDER,
         self::EVENT_REMIND_QUOTE,
         self::EVENT_CREATE_PURCHASE_ORDER,
         self::EVENT_UPDATE_PURCHASE_ORDER,

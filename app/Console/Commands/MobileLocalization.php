@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -63,7 +63,7 @@ class MobileLocalization extends Command
     {
         $resources = (array)$this->getResources();
 
-        if(is_iterable($resources)) {
+        if (is_iterable($resources)) {
             foreach ($resources as $key => $val) {
                 $transKey = "texts.{$key}";
                 if (trans($transKey) == $transKey) {
@@ -75,7 +75,7 @@ class MobileLocalization extends Command
 
     private function flutterResources()
     {
-        $languages = cache('languages');
+        $languages = app('languages');
         $resources = $this->getResources();
 
         foreach ($languages as $language) {

@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -100,6 +100,12 @@ class UpdateVendorRequest extends Request
 
         if (array_key_exists('country_id', $input) && is_null($input['country_id'])) {
             unset($input['country_id']);
+        } elseif (!$this->vendor->country_id) {
+
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+
+            $input['country_id'] = $user->company()->country()->id;
         }
 
         $input = $this->decodePrimaryKeys($input);

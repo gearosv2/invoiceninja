@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -29,7 +29,7 @@ class HostedMigrationController extends Controller
         MultiDB::findAndSetDbByCompanyKey($request->company_key);
         $c = Company::where('company_key', $request->company_key)->first();
 
-        if(!$c || $c->is_disabled) {
+        if (!$c || $c->is_disabled) {
             return response()->json(['message' => 'ok'], 200);
         }
 

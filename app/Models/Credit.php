@@ -4,25 +4,29 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
 
 namespace App\Models;
 
+use App\Utils\Ninja;
+use App\Utils\Number;
+use Laravel\Scout\Searchable;
+use Illuminate\Support\Carbon;
+use App\Utils\Traits\MakesHash;
 use App\Helpers\Invoice\InvoiceSum;
-use App\Helpers\Invoice\InvoiceSumInclusive;
-use App\Models\Presenters\CreditPresenter;
+use Illuminate\Support\Facades\App;
+use App\Utils\Traits\MakesReminders;
 use App\Services\Credit\CreditService;
 use App\Services\Ledger\LedgerService;
-use App\Utils\Traits\MakesDates;
-use App\Utils\Traits\MakesHash;
+use App\Events\Credit\CreditWasEmailed;
 use App\Utils\Traits\MakesInvoiceValues;
-use App\Utils\Traits\MakesReminders;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 use Laracasts\Presenter\PresentableTrait;
+use App\Models\Presenters\CreditPresenter;
+use App\Helpers\Invoice\InvoiceSumInclusive;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Models\Credit
@@ -128,12 +132,12 @@ class Credit extends BaseModel
 {
     use MakesHash;
     use Filterable;
-    use MakesDates;
     use SoftDeletes;
     use PresentableTrait;
     use MakesInvoiceValues;
     use MakesReminders;
-
+    use Searchable;
+    
     protected $presenter = CreditPresenter::class;
 
     protected $fillable = [
@@ -171,6 +175,7 @@ class Credit extends BaseModel
         'exchange_rate',
         'subscription_id',
         'vendor_id',
+        'location_id',
     ];
 
     protected $casts = [
@@ -193,6 +198,35 @@ class Credit extends BaseModel
     public const STATUS_PARTIAL = 3;
 
     public const STATUS_APPLIED = 4;
+
+    public function toSearchableArray()
+    {
+        $locale = $this->company->locale();
+        App::setLocale($locale);
+
+        return [
+            'id' => $this->id,
+            'name' => ctrans('texts.credit') . " " . $this->number . " | " . $this->client->present()->name() .  ' | ' . Number::formatMoney($this->amount, $this->company) . ' | ' . $this->translateDate($this->date, $this->company->date_format(), $locale),
+            'hashed_id' => $this->hashed_id,
+            'number' => $this->number,
+            'is_deleted' => $this->is_deleted,
+            'amount' => (float) $this->amount,
+            'balance' => (float) $this->balance,
+            'due_date' => $this->due_date,
+            'date' => $this->date,
+            'custom_value1' => (string)$this->custom_value1,
+            'custom_value2' => (string)$this->custom_value2,
+            'custom_value3' => (string)$this->custom_value3,
+            'custom_value4' => (string)$this->custom_value4,
+            'company_key' => $this->company->company_key,
+            'po_number' => (string)$this->po_number,
+        ];
+    }
+
+    public function getScoutKey()
+    {
+        return $this->hashed_id;
+    }
 
     public function getEntityType()
     {
@@ -219,6 +253,11 @@ class Credit extends BaseModel
         return $this->belongsTo(User::class, 'assigned_user_id', 'id')->withTrashed();
     }
 
+    public function location(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Location::class)->withTrashed();
+    }
+
     public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Vendor::class);
@@ -231,7 +270,7 @@ class Credit extends BaseModel
 
     public function activities(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(Activity::class)->orderBy('id', 'DESC')->take(50);
+        return $this->hasMany(Activity::class)->where('company_id', $this->company_id)->where('client_id', $this->client_id)->orderBy('id', 'DESC')->take(50);
     }
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -268,9 +307,9 @@ class Credit extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<CompanyLedger>
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
-    public function company_ledger(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function company_ledger()
     {
         return $this->morphMany(CompanyLedger::class, 'company_ledgerable');
     }
@@ -290,17 +329,17 @@ class Credit extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany<Payment>
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
-    public function payments(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    public function payments()
     {
         return $this->morphToMany(Payment::class, 'paymentable');
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<Document>
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
-    public function documents(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function documents()
     {
         return $this->morphMany(Document::class, 'documentable');
     }
@@ -397,6 +436,26 @@ class Credit extends BaseModel
                 return ctrans('texts.applied');
             default:
                 return ctrans('texts.sent');
+        }
+    }
+
+    /**
+     * entityEmailEvent
+     *
+     * Translates the email type into an activity + notification 
+     * that matches.
+     */
+    public function entityEmailEvent($invitation, $reminder_template)
+    {
+        
+        switch ($reminder_template) {
+            case 'credit':
+                event(new CreditWasEmailed($invitation, $invitation->company, Ninja::eventVars(auth()->user() ? auth()->user()->id : null), $reminder_template));
+                break;
+            
+            default:
+                // code...
+                break;
         }
     }
 }

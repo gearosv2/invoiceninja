@@ -25,14 +25,16 @@ use App\Factory\VendorFactory;
 use App\Utils\Traits\MakesHash;
 use App\Models\RecurringInvoice;
 use App\DataMapper\ClientSettings;
+use App\DataMapper\CompanySettings;
 use App\Utils\Traits\GeneratesCounter;
+use App\Repositories\InvoiceRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 /**
- * @test
- * @covers  App\Utils\Traits\GeneratesCounter
+ * 
+ *   App\Utils\Traits\GeneratesCounter
  */
 class GeneratesCounterTest extends TestCase
 {
@@ -42,8 +44,8 @@ class GeneratesCounterTest extends TestCase
     use MockAccountData;
 
     public $faker;
-    
-    protected function setUp() :void
+
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -54,13 +56,136 @@ class GeneratesCounterTest extends TestCase
         $this->makeTestData();
     }
 
+    public function testResetCounterFromClientCounter()
+    {
+
+        $settings = CompanySettings::defaults();
+
+        $settings->reset_counter_date = "2026-01-01";
+        $settings->reset_counter_frequency_id = "10";
+        $settings->invoice_number_pattern = '{$client_id_number}/{$year}-{$client_counter}';
+
+        $company = Company::factory()->create([
+            'account_id' => $this->account->id,
+        ]);
+
+        $client = Client::factory()->create([
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+            'id_number' => 'IDNUMBER',
+            'settings' => $settings,
+        ]);
+
+        $this->assertEquals("10", $client->getSetting('reset_counter_frequency_id'));
+        $this->assertEquals("2026-01-01", $client->getSetting('reset_counter_date'));
+
+        $invoice = Invoice::factory()->create([
+            'client_id' => $client->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->travelTo('2025-02-01');
+
+        $invoice->number = null;
+        $invoice->status_id = Invoice::STATUS_DRAFT;
+        $invoice->save();
+
+            $this->travelTo('2025-02-01');
+
+            $invoice->number = null;
+            $invoice->status_id = Invoice::STATUS_DRAFT;
+            $invoice->save();
+
+            $invoice = $invoice->service()->markSent()->save();
+
+            $this->assertNotNull($invoice->number);
+
+            $this->assertEquals("IDNUMBER/2025-0001", $invoice->number);
+
+            $this->travelTo('2026-02-01');
+
+            $invoice = Invoice::factory()->create([
+                        'client_id' => $client->id,
+                        'company_id' => $company->id,
+                        'user_id' => $this->user->id,
+                    ]);
+
+            $invoice->number = null;
+            $invoice->status_id = Invoice::STATUS_DRAFT;
+            $invoice->save();
+
+            $invoice = $invoice->service()->markSent()->save();
+
+        $this->assertEquals("IDNUMBER/2026-0001", $invoice->number);
+
+
+    }
+
+    public function testAnnualCounterResetLogic()
+    {
+        $settings = CompanySettings::defaults();
+        
+        $settings->reset_counter_date = "2026-01-01";
+        $settings->reset_counter_frequency_id = "10";
+        $settings->invoice_number_pattern = '{$year}-{$counter}';
+
+        $company = Company::factory()->create([
+            'account_id' => $this->account->id,
+            'settings' => $settings,
+        ]);
+
+        $client = Client::factory()->create([
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->assertEquals("10", $client->getSetting('reset_counter_frequency_id'));
+        $this->assertEquals("2026-01-01", $client->getSetting('reset_counter_date'));
+
+        $invoice = Invoice::factory()->create([
+            'client_id' => $client->id,
+            'company_id' => $company->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        $this->travelTo('2025-02-01');
+
+        $invoice->number = null;
+        $invoice->status_id = Invoice::STATUS_DRAFT;
+        $invoice->save();
+
+        $invoice = $invoice->service()->markSent()->save();
+        
+        $this->assertNotNull($invoice->number);
+
+        $this->assertEquals("2025-0001", $invoice->number);
+
+        $this->travelTo('2026-02-01');
+
+        $invoice = Invoice::factory()->create([
+                    'client_id' => $client->id,
+                    'company_id' => $company->id,
+                    'user_id' => $this->user->id,
+                ]);
+
+        $invoice->number = null;
+        $invoice->status_id = Invoice::STATUS_DRAFT;
+        $invoice->save();
+
+        $invoice = $invoice->service()->markSent()->save();
+
+        $this->assertEquals("2026-0001", $invoice->number);
+
+    }
+
     public function testResetCounterGroup()
     {
         $timezone = Timezone::find(1);
 
         $date_formatted = now($timezone->name)->format('Ymd');
 
-        $gs = new GroupSetting;        
+        $gs = new GroupSetting();
         $gs->name = 'Test';
         $gs->company_id = $this->client->company_id;
         $gs->settings = ClientSettings::buildClientSettings($this->company->settings, $this->client->settings);
@@ -72,7 +197,7 @@ class GeneratesCounterTest extends TestCase
         $settings = $gs->settings;
         // $settings = $this->client->settings;
         $settings->invoice_number_pattern = '{$date:Ymd}-{$group_counter}';
-        $settings->timezone_id = 1;        
+        $settings->timezone_id = 1;
         $gs->settings = $settings;
         $gs->save();
 
@@ -370,7 +495,7 @@ class GeneratesCounterTest extends TestCase
         $settings->quote_number_pattern = '{$year}-{$counter}';
         $settings->shared_invoice_quote_counter = true;
 
-$settings->timezone_id = '31';
+        $settings->timezone_id = '31';
 
         $this->client->company->settings = $settings;
         $this->client->company->save();
@@ -399,7 +524,7 @@ $settings->timezone_id = '31';
         $settings->client_number_pattern = '{$year}-{$client_counter}';
         $settings->client_number_counter = 10;
 
-$settings->timezone_id = '31';
+        $settings->timezone_id = '31';
 
         $this->company->settings = $settings;
         $this->company->save();
@@ -430,8 +555,8 @@ $settings->timezone_id = '31';
         $settings->counter_padding = 5;
         $settings->invoice_number_counter = 7;
         //$this->client->settings = $settings;
-        
-$settings->timezone_id = '31';
+
+        $settings->timezone_id = '31';
 
         $this->company->settings = $settings;
         $this->company->save();
@@ -514,8 +639,8 @@ $settings->timezone_id = '31';
     {
         $settings = $this->company->settings;
         $settings->client_number_pattern = '{$year}-{$user_id}-{$counter}';
-        
-$settings->timezone_id = '31';
+
+        $settings->timezone_id = '31';
 
         $this->company->settings = $settings;
         $this->company->save();
@@ -537,8 +662,8 @@ $settings->timezone_id = '31';
     {
         $settings = $this->company->settings;
         $settings->vendor_number_pattern = '{$year}-{$user_id}-{$counter}';
-        
-$settings->timezone_id = '31';
+
+        $settings->timezone_id = '31';
 
         $this->company->settings = $settings;
         $this->company->save();

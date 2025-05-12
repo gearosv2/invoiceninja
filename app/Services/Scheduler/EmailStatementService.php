@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -70,7 +70,7 @@ class EmailStatementService
             'show_aging_table' => $this->scheduler->parameters['show_aging_table'] ?? true,
             'show_credits_table' => $this->scheduler->parameters['show_credits_table'] ?? true,
             'only_clients_with_invoices' => $this->scheduler->parameters['only_clients_with_invoices'] ?? false,
-            'status' => $this->scheduler->parameters['status']
+            'status' => $this->scheduler->parameters['status'] ?? 'all',
         ];
     }
 

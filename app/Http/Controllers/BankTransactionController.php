@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -112,7 +112,7 @@ class BankTransactionController extends BaseController
             $this->bank_transaction_repo->convert_matched($bank_transactions);
         } else {
             $bank_transactions->each(function ($bank_transaction, $key) use ($action, $user) {
-                if($user->can('edit', $bank_transaction)) {
+                if ($user->can('edit', $bank_transaction)) {
                     $this->bank_transaction_repo->{$action}($bank_transaction);
                 }
             });

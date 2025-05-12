@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -28,6 +28,7 @@ use App\Services\EDocument\Standards\FatturaPA;
 use App\Services\EDocument\Standards\RoEInvoice;
 use App\Services\EDocument\Standards\OrderXDocument;
 use App\Services\EDocument\Standards\FacturaEInvoice;
+use App\Services\EDocument\Standards\ZugferdEDocument;
 use App\Services\EDocument\Standards\ZugferdEDokument;
 
 class CreateEDocument implements ShouldQueue
@@ -60,7 +61,7 @@ class CreateEDocument implements ShouldQueue
         App::setLocale($settings_entity->locale());
 
         /* Set customized translations _NOW_ */
-        if($this->document->client ?? false) {
+        if ($this->document->client ?? false) {
             $t->replace(Ninja::transformTranslations($this->document->client->getMergedSettings()));
         }
 
@@ -70,7 +71,7 @@ class CreateEDocument implements ShouldQueue
         if ($this->document instanceof Invoice) {
             switch ($e_document_type) {
                 case "PEPPOL":
-                    return (new Peppol($this->document))->toXml();
+                    return (new Peppol($this->document))->run()->toXml();
                 case "FACT1":
                     return (new RoEInvoice($this->document))->generateXml();
                 case "FatturaPA":
@@ -85,8 +86,15 @@ class CreateEDocument implements ShouldQueue
                 case "XInvoice-Extended":
                 case "XInvoice-BasicWL":
                 case "XInvoice-Basic":
-                    $zugferd = (new ZugferdEDokument($this->document))->run();
 
+                //New implementation now the default 2025-02-04 - requires zugferd_version_two=false to disable
+                if(config('ninja.zugferd_version_two')){
+                    $zugferd = (new ZugferdEDocument($this->document))->run();
+                }
+                else {
+                    $zugferd = (new ZugferdEDokument($this->document))->run();
+                }
+                
                     return $this->returnObject ? $zugferd->xdocument : $zugferd->getXml();
                 case "Facturae_3.2":
                 case "Facturae_3.2.1":

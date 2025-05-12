@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -40,7 +40,7 @@ class ShowActivityRequest extends Request
     {
         $input = $this->all();
 
-        if(isset($input['entity_id'])) {
+        if (isset($input['entity_id'])) {
             $input['entity_id'] = $this->decodePrimaryKey($input['entity_id']);
         }
 

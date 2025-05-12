@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -78,7 +78,7 @@ class QueryLogging
 
             if ($request->hasHeader('X-CLIENT-PLATFORM')) {
                 $platform = $request->header('X-CLIENT-PLATFORM');
-            } elseif($request->hasHeader('X-React')) {
+            } elseif ($request->hasHeader('X-React')) {
                 $platform = 'react';
             }
 

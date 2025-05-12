@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -67,7 +67,7 @@ class VerifyPhone implements ShouldQueue
         try {
             $phone_number = $twilio->lookups->v1->phoneNumbers($this->user->phone)
                                                 ->fetch(["countryCode" => $countryCode]);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->user->verified_phone_number = false;
             $this->user->save();
             return;

@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -137,6 +137,8 @@ class Csv extends BaseImport implements ImportInterface
         $this->repository->import_mode = true;
 
         $this->transformer = new ClientTransformer($this->company);
+
+        $data = $this->groupClients($data, 'client.name');
 
         $client_count = $this->ingest($data, $entity_type);
 

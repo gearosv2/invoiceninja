@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -104,7 +104,7 @@ class SystemHealth
                 $cs = DB::table('clients')
                       ->select('settings->currency_id as id')
                                 ->get();
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 return true; //fresh installs, there may be no DB connection, nor migrations could have run yet.
             }
 

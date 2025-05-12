@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
 use App\Utils\Traits\MakesHash;
 use App\Models\RecurringExpense;
 use App\Models\RecurringInvoice;
+use App\Services\Invoice\LocationData;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\RecurringInvoice\SendRecurring;
 
@@ -170,12 +171,17 @@ class RecurringService
 
         $sub_id = $this->decodePrimaryKey($subscription_id);
 
-        if(Subscription::withTrashed()->where('id', $sub_id)->where('company_id', $this->recurring_entity->company_id)->exists()) {
+        if (Subscription::withTrashed()->where('id', $sub_id)->where('company_id', $this->recurring_entity->company_id)->exists()) {
             $this->recurring_entity->subscription_id = $sub_id;
         }
 
         return $this;
 
+    }
+    
+    public function location(): array
+    {
+        return (new LocationData($this->recurring_entity))->run();       
     }
 
     public function save()

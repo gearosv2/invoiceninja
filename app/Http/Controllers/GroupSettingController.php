@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -140,7 +140,7 @@ class GroupSettingController extends BaseController
     public function update(UpdateGroupSettingRequest $request, GroupSetting $group_setting)
     {
         /** Need this to prevent settings from being overwritten */
-        if(!$request->file('company_logo')) {
+        if (!$request->file('company_logo')) {
             $group_setting = $this->group_setting_repo->save($request->all(), $group_setting);
         }
 

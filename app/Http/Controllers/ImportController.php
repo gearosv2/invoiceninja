@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -81,9 +81,6 @@ class ImportController extends Controller
         /** @var UploadedFile $file */
         foreach ($request->files->get('files') as $entityType => $file) {
             $contents = file_get_contents($file->getPathname());
-
-            $contents = $this->convertEncoding($contents);
-
             // Store the csv in cache with an expiry of 10 minutes
             Cache::put($hash.'-'.$entityType, base64_encode($contents), 1200);
 
@@ -118,12 +115,39 @@ class ImportController extends Controller
 
         })->toArray();
 
+        //Exact string match
+        foreach ($headers as $key => $value) {
 
-        foreach($headers as $key => $value) {
+            foreach ($translated_keys as $tkey => $tvalue) {
 
-            foreach($translated_keys as $tkey => $tvalue) {
+                $concat_needle = str_ireplace(" ", "", $tvalue['index'].$tvalue['label']);
+                $concat_value = str_ireplace(" ", "", $value);
 
-                if($this->testMatch($value, $tvalue['label'])) {
+                if ($this->testMatch($concat_value, $concat_needle)) {
+
+                    $hit = $tvalue['key'];
+                    $hints[$key] = $hit;
+                    unset($translated_keys[$tkey]);
+                    break;
+
+                } else {
+                    $hints[$key] = null;
+                }
+
+            }
+
+        }
+
+        //Label Match
+        foreach ($headers as $key => $value) {
+
+            if (isset($hints[$key])) {
+                continue;
+            }
+
+            foreach ($translated_keys as $tkey => $tvalue) {
+
+                if ($this->testMatch($value, $tvalue['label'])) {
                     $hit = $tvalue['key'];
                     $hints[$key] = $hit;
                     unset($translated_keys[$tkey]);
@@ -134,17 +158,16 @@ class ImportController extends Controller
 
             }
 
-
         }
 
-        //second pass using the index of the translation here
-        foreach($headers as $key => $value) {
-            if(isset($hints[$key])) {
+        //Index matching pass using the index of the translation here
+        foreach ($headers as $key => $value) {
+            if (isset($hints[$key])) {
                 continue;
             }
 
-            foreach($translated_keys as $tkey => $tvalue) {
-                if($this->testMatch($value, $tvalue['index'])) {
+            foreach ($translated_keys as $tkey => $tvalue) {
+                if ($this->testMatch($value, $tvalue['index'])) {
                     $hit = $tvalue['key'];
                     $hints[$key] = $hit;
                     unset($translated_keys[$tkey]);
@@ -162,18 +185,6 @@ class ImportController extends Controller
     private function testMatch($haystack, $needle): bool
     {
         return stripos($haystack, $needle) !== false;
-    }
-
-    private function convertEncoding($data)
-    {
-
-        // $enc = mb_detect_encoding($data, mb_list_encodings(), true);
-
-        // if($enc !== false) {
-        //     $data = mb_convert_encoding($data, "UTF-8", $enc);
-        // }
-
-        return $data;
     }
 
     public function import(ImportRequest $request)
@@ -259,7 +270,10 @@ class ImportController extends Controller
             'WINDOWS-1251', // CP1251
             'UTF-16',
             'UTF-32',
-            'ASCII'
+            'ASCII',
+            'WINDOWS-1254', // Turkish, which sometimes includes Georgian
+            'WINDOWS-1256', // Arabic, which sometimes includes Georgian
+            'ISO-8859-10',
         ];
 
         foreach ($data as $key => $value) {

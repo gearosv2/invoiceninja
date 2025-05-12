@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -35,7 +35,9 @@ class ZipCredits implements ShouldQueue
 
     public $tries = 1;
 
-    public function __construct(protected array $credit_ids, protected Company $company, protected User $user)
+    public $timeout = 3600;
+
+    public function __construct(protected mixed $credit_ids, protected Company $company, protected User $user)
     {
     }
 
@@ -52,8 +54,17 @@ class ZipCredits implements ShouldQueue
         $zipFile = new \PhpZip\ZipFile();
         $file_name = now()->addSeconds($this->company->timezone_offset())->format('Y-m-d-h-m-s').'_'.str_replace(' ', '_', trans('texts.credits')).'.zip';
 
+        nlog($this->credit_ids);
+
         $invitations = CreditInvitation::query()->with('credit')->whereIn('credit_id', $this->credit_ids)->get();
+
+        if ($invitations->count() == 0) {
+            nlog("no Credit Invitations");
+            return;
+        }
+
         $invitation = $invitations->first();
+
         $path = $invitation->contact->client->credit_filepath($invitation);
 
         try {
@@ -78,5 +89,11 @@ class ZipCredits implements ShouldQueue
         } finally {
             $zipFile->close();
         }
+    }
+
+    public function failed($exception)
+    {
+        nlog("ZipCredits:: Exception:: => ".$exception->getMessage());
+        config(['queue.failed.driver' => null]);
     }
 }

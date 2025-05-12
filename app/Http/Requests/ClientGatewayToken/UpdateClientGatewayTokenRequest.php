@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -45,6 +45,16 @@ class UpdateClientGatewayTokenRequest extends Request
     public function prepareForValidation()
     {
         $input = $this->all();
+
+        if (isset($input['client_id'])) {
+            unset($input['client_id']);
+        }
+
+        if (isset($input['company_gateway_id'])) {
+            unset($input['company_gateway_id']);
+        }
+
+        $input = $this->decodePrimaryKeys($input);
 
         $this->replace($input);
     }

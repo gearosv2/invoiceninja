@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -414,6 +414,10 @@ class RecurringInvoiceController extends BaseController
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        if((stripos($request->action, 'send_now') !== false) && $user->hasExactPermission('disable_emails')){
+            return response(['message' => ctrans('texts.disable_emails_error')], 400);
+        }
+
         $percentage_increase = request()->has('percentage_increase') ? request()->input('percentage_increase') : 0;
 
         if (in_array($request->action, ['increase_prices', 'update_prices'])) {
@@ -424,11 +428,22 @@ class RecurringInvoiceController extends BaseController
 
         $recurring_invoices = RecurringInvoice::withTrashed()->find($request->ids);
 
+        if ($request->action == 'bulk_update' && $user->can('edit', $recurring_invoices->first())) {
 
-        if($request->action == 'set_payment_link' && $request->has('subscription_id')) {
+            $recurring_invoices = RecurringInvoice::withTrashed()
+                    ->company()
+                    ->whereIn('id', $request->ids);
+
+            $this->recurring_invoice_repo->bulkUpdate($recurring_invoices, $request->column, $request->new_value);
+
+            return $this->listResponse(RecurringInvoice::query()->withTrashed()->company()->whereIn('id', $request->ids));
+
+        }
+
+        if ($request->action == 'set_payment_link' && $request->has('subscription_id')) {
 
             $recurring_invoices->each(function ($invoice) use ($user, $request) {
-                if($user->can('edit', $invoice)) {
+                if ($user->can('edit', $invoice)) {
                     $invoice->service()->setPaymentLink($request->subscription_id)->save();
                 }
             });

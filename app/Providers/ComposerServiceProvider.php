@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -33,7 +33,6 @@ class ComposerServiceProvider extends ServiceProvider
             $view->with('states', $states);
         });
 
-        // CAProvinces View Composer
         view()->composer(['*.rotessa.components.address','*.rotessa.components.banks.CA.bank','*.rotessa.components.dropdowns.country.CA'], function ($view) {
             $provinces = CAProvinces::get();
             $view->with('provinces', $provinces);
@@ -50,6 +49,6 @@ class ComposerServiceProvider extends ServiceProvider
     public function register()
     {
         //
-        
+
     }
 }

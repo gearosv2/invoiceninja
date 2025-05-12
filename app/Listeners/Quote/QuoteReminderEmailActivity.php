@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -51,6 +51,7 @@ class QuoteReminderEmailActivity implements ShouldQueue
         $fields->user_id = $user_id;
         $fields->quote_id = $event->invitation->quote_id;
         $fields->company_id = $event->invitation->company_id;
+        $fields->account_id = $event->invitation->company->account_id;
         $fields->client_contact_id = $event->invitation->client_contact_id;
         $fields->client_id = $event->invitation->quote->client_id;
         $fields->activity_type_id = $reminder;

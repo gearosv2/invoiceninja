@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -84,17 +84,17 @@ class AccountTransformer implements AccountTransformerInterface
         $current_balance = 0;
         $account_currency = '';
 
-        if(property_exists($account, 'currentBalance')) {
+        if (property_exists($account, 'currentBalance')) {
             $current_balance = $account->currentBalance->amount ?? 0;
             $account_currency = $account->currentBalance->currency ?? '';
-        } elseif(property_exists($account, 'balance')) {
+        } elseif (property_exists($account, 'balance')) {
             $current_balance = $account->balance->amount ?? 0;
             $account_currency = $account->balance->currency ?? '';
         }
 
         $account_status = $account->accountStatus;
 
-        if(property_exists($account, 'dataset')) {
+        if (property_exists($account, 'dataset')) {
             $dataset = $account->dataset[0];
             $status = false;
             $update = false;
@@ -114,7 +114,7 @@ class AccountTransformer implements AccountTransformerInterface
                 default => $status = false
             };
 
-            if($status) {
+            if ($status) {
                 $account_status = $status;
             }
 
@@ -125,9 +125,9 @@ class AccountTransformer implements AccountTransformerInterface
                 default => $update = false,
             };
 
-            if($status && $update) {
+            if ($status && $update) {
                 $account_status = $status . ' - ' . $update;
-            } elseif($update) {
+            } elseif ($update) {
                 $account_status = $update;
             }
 

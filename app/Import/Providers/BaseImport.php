@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -105,7 +105,7 @@ class BaseImport
         }
 
         nlog("found {$entity_type}");
-        
+
         $csv = base64_decode($base64_encoded_csv);
         $csv = mb_convert_encoding($csv, 'UTF-8', 'UTF-8');
 
@@ -194,6 +194,33 @@ class BaseImport
 
     }
 
+    public function groupClients($csvData, $key)
+    {
+        if (!$key || !isset($csvData[0][$key])) {
+            return $csvData;
+        }
+
+        $grouped = [];
+
+        // Group by client name / id.
+        $grouped = [];
+
+        foreach ($csvData as $contact_item) {
+            if (empty($contact_item[$key])) {
+                $this->error_array['client'][] = [
+                    'client' => $contact_item,
+                    'error' => 'No client identifier',
+                ];
+            } else {
+                $grouped[$contact_item[$key]][] = $contact_item;
+            }
+        }
+
+        return $grouped;
+
+
+    }
+
     private function groupInvoices($csvData, $key)
     {
         if (! $key) {
@@ -257,7 +284,7 @@ class BaseImport
 
             unset($record['']);
 
-            if(!is_array($record)) {
+            if (!is_array($record)) {
                 continue;
             }
 
@@ -317,7 +344,7 @@ class BaseImport
 
         foreach ($data as $key => $record) {
 
-            if(!is_array($record)) {
+            if (!is_array($record)) {
                 continue;
             }
 
@@ -384,12 +411,13 @@ class BaseImport
 
         foreach ($invoices as $raw_invoice) {
 
-            if(!is_array($raw_invoice)) {
+            if (!is_array($raw_invoice)) {
                 continue;
             }
 
             try {
                 $invoice_data = $invoice_transformer->transform($raw_invoice);
+                $invoice_data['user_id'] = $this->company->owner()->id;
 
                 $invoice_data['line_items'] = $this->cleanItems(
                     $invoice_data['line_items'] ?? []
@@ -473,12 +501,10 @@ class BaseImport
 
         $tasks = $this->groupTasks($tasks, $task_number_key);
 
-        nlog($tasks);
-        
         foreach ($tasks as $raw_task) {
             $task_data = [];
 
-            if(!is_array($raw_task)) {
+            if (!is_array($raw_task)) {
                 continue;
             }
 
@@ -551,7 +577,7 @@ class BaseImport
 
         foreach ($invoices as $raw_invoice) {
 
-            if(!is_array($raw_invoice)) {
+            if (!is_array($raw_invoice)) {
                 continue;
             }
 
@@ -603,7 +629,7 @@ class BaseImport
                     nlog($invoice_data);
                     $saveable_invoice_data = $invoice_data;
 
-                    if(array_key_exists('payments', $saveable_invoice_data)) {
+                    if (array_key_exists('payments', $saveable_invoice_data)) {
                         unset($saveable_invoice_data['payments']);
                     }
 
@@ -619,9 +645,13 @@ class BaseImport
                         // Check for payment columns
                         if (! empty($invoice_data['payments'])) {
                             foreach (
-                                $invoice_data['payments']
-                                as $payment_data
+                                $invoice_data['payments'] as $payment_data
                             ) {
+
+                                if ($payment_data['amount'] == 0 && $invoice_data['status_id'] == 4) {
+                                    $payment_data['amount'] = $invoice->amount;
+                                }
+
                                 $payment_data['user_id'] = $invoice->user_id;
                                 $payment_data['client_id'] =
                                     $invoice->client_id;
@@ -646,7 +676,7 @@ class BaseImport
 
                                     $payment_date = Carbon::parse($payment->date);
 
-                                    if(!$payment_date->isToday()) {
+                                    if (!$payment_date->isToday()) {
 
                                         $payment->paymentables()->update(['created_at' => $payment_date]);
 
@@ -706,8 +736,8 @@ class BaseImport
 
         if ($invoice->status_id == Invoice::STATUS_DRAFT) {
             return $invoice;
-        } 
-        
+        }
+
         $invoice = $invoice
             ->service()
             ->markSent()
@@ -771,7 +801,7 @@ class BaseImport
 
         foreach ($quotes as $raw_quote) {
 
-            if(!is_array($raw_quote)) {
+            if (!is_array($raw_quote)) {
                 continue;
             }
 
@@ -860,7 +890,7 @@ class BaseImport
     {
         $user = false;
 
-        if(is_numeric($user_hash)) {
+        if (is_numeric($user_hash)) {
 
             $user = User::query()
                         ->where('account_id', $this->company->account->id)
@@ -869,7 +899,7 @@ class BaseImport
 
         }
 
-        if($user) {
+        if ($user) {
             return $user->id;
         }
 
@@ -932,9 +962,15 @@ class BaseImport
 
             $diff = array_diff($key_keys, $row_keys);
 
-            if(!empty($diff)) {
+            if (count($key_keys) > count($row_keys)) {
+                // Truncate key_keys to match the length of row_keys
+                $key_keys = array_slice($key_keys, 0, count($row_keys));
+                // Rebuild the $keys array with only the kept columns
+                $keys = array_intersect_key($keys, array_flip($key_keys));
+            }else if (!empty($diff)) {
                 return false;
             }
+
             /** 12-04-2024 If we do not have matching keys - then this row import is _not_ valid */
 
             return array_combine($keys, array_intersect_key($row, $keys));

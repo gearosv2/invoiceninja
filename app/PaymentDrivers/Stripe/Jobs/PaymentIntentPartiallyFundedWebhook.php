@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -90,8 +90,8 @@ class PaymentIntentPartiallyFundedWebhook implements ShouldQueue
 
             $pi = \Stripe\PaymentIntent::retrieve($payment_intent, $stripe_driver->stripe_connect_auth);
 
-            $amount = $stripe_driver->convertFromStripeAmount($pi->amount, $stripe_driver->client->currency()->precision, $stripe_driver->client->currency()->precision);
-            $amount_received =  $stripe_driver->convertFromStripeAmount($pi->amount_received, $stripe_driver->client->currency()->precision, $stripe_driver->client->currency()->precision);
+            $amount = $stripe_driver->convertFromStripeAmount($pi->amount, $stripe_driver->client->currency()->precision, $stripe_driver->client->currency());
+            $amount_received =  $stripe_driver->convertFromStripeAmount($pi->amount_received, $stripe_driver->client->currency()->precision, $stripe_driver->client->currency());
 
             //at this point we just send notification emails to the client and advise of over/under payments.
         }

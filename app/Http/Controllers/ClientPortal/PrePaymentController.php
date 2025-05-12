@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -35,11 +35,17 @@ class PrePaymentController extends Controller
     /**
      * Show the list of payments.
      *
-     * @return Factory|View
+     * @return Factory|View|\Illuminate\Http\RedirectResponse
      */
     public function index()
     {
+
         $client = auth()->guard('contact')->user()->client;
+
+        if (!$client->getSetting('client_initiated_payments')) {
+            return redirect()->route('client.dashboard');
+        }
+
         $minimum = $client->getSetting('client_initiated_payments_minimum');
         $minimum_amount = $minimum == 0 ? "" : Number::formatMoney($minimum, $client);
 
@@ -111,7 +117,7 @@ class PrePaymentController extends Controller
 
         $variables = false;
 
-        if(($invitation = $invoices->first()->invitations()->first() ?? false) && $invoice->client->getSetting('show_accept_invoice_terms')) {
+        if (($invitation = $invoices->first()->invitations()->first() ?? false) && $invoice->client->getSetting('show_accept_invoice_terms')) {
             $variables = (new HtmlEngine($invitation))->generateLabelsAndValues();
         }
 

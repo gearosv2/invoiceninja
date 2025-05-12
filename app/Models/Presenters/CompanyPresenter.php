@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -91,10 +91,30 @@ class CompanyPresenter extends EntityPresenter
         }
     }
 
+    public function logoFile($settings)
+    {
+        
+        $context_options = [
+            "ssl" => [
+               "verify_peer" => false,
+               "verify_peer_name" => false,
+            ],
+        ];
+
+        if (strlen($settings->company_logo) >= 1 && (strpos($settings->company_logo, 'http') !== false)) {
+            return @file_get_contents($settings->company_logo, false, stream_context_create($context_options));
+        } elseif (strlen($settings->company_logo) >= 1) {
+            return @file_get_contents(url('') . $settings->company_logo, false, stream_context_create($context_options));
+        } else {
+            return '=b"ëPNG\r\n\x1A\n\0\0\0\rIHDR\0\0\0\x01\0\0\0\x01\x08\x04\0\0\0Á\x1C\f\x02\0\0\0\vIDATx┌cd`\0\0\0\x06\0\x020üð/\0\0\0\0IEND«B`é';
+        }
+
+    }
+
     public function email()
     {
         /** @var \App\Models\Company $this */
-        if(str_contains($this->settings->email, "@")) {
+        if (str_contains($this->settings->email, "@")) {
             return $this->settings->email;
         }
 
@@ -152,6 +172,11 @@ class CompanyPresenter extends EntityPresenter
         } else {
             return false;
         }
+    }
+
+    public function phone()
+    {
+        return $this->entity->settings->phone ?? ' ';
     }
 
     public function address1()

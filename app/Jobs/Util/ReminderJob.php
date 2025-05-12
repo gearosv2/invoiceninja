@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -71,12 +71,10 @@ class ReminderJob implements ShouldQueue
                  ->whereHas('company', function ($query) {
                      $query->where('is_disabled', 0);
                  })
-                 ->with('invitations')->chunk(200, function ($invoices) {
-                     foreach ($invoices as $invoice) {
-                         $this->sendReminderForInvoice($invoice);
-                     }
-
-                     sleep(1);
+                 ->with('invitations')
+                 ->cursor()
+                 ->each(function ($invoice) {
+                     $this->sendReminderForInvoice($invoice);
                  });
         } else {
             //multiDB environment, need to
@@ -99,13 +97,13 @@ class ReminderJob implements ShouldQueue
                      ->whereHas('company', function ($query) {
                          $query->where('is_disabled', 0);
                      })
-                     ->with('invitations')->chunk(200, function ($invoices) {
-
-                         foreach ($invoices as $invoice) {
-                             $this->sendReminderForInvoice($invoice);
-                         }
-
-                         sleep(1);
+                    ->whereHas('company.account', function ($q) {
+                        $q->whereNotNull('plan')->where('plan_expires', '>', now()->subDays(2));
+                    })
+                     ->with('invitations')
+                     ->cursor()
+                     ->each(function ($invoice) {
+                         $this->sendReminderForInvoice($invoice);
                      });
             }
         }
@@ -128,9 +126,11 @@ class ReminderJob implements ShouldQueue
             $reminder_template = $invoice->calculateTemplate('invoice');
             nrlog("#{$invoice->number} => reminder template = {$reminder_template}");
             $invoice->service()->touchReminder($reminder_template)->save();
+
             $fees = $this->calcLateFee($invoice, $reminder_template);
 
-            if($invoice->isLocked()) {
+            if ($invoice->isLocked()) {
+                nlog("invoice is locked - adding fee to new invoice");
                 return $this->addFeeToNewInvoice($invoice, $reminder_template, $fees);
             }
 
@@ -143,23 +143,33 @@ class ReminderJob implements ShouldQueue
             }
 
             if (in_array($reminder_template, ['reminder1', 'reminder2', 'reminder3', 'reminder_endless', 'endless_reminder']) &&
-        $invoice->client->getSetting($enabled_reminder) &&
-        $invoice->client->getSetting('send_reminders') &&
-        (Ninja::isSelfHost() || $invoice->company->account->isPaidHostedClient())) {
-                $invoice->invitations->each(function ($invitation) use ($invoice, $reminder_template) {
-                    if ($invitation->contact && !$invitation->contact->trashed() && $invitation->contact->email) {
-                        EmailEntity::dispatch($invitation, $invitation->company, $reminder_template);
-                        nrlog("Firing reminder email for invoice {$invoice->number} - {$reminder_template}");
-                        $invoice->entityEmailEvent($invitation, $reminder_template);
-                        $invoice->sendEvent(Webhook::EVENT_REMIND_INVOICE, "client");
-                    }
-                });
+            $invoice->client->getSetting($enabled_reminder) &&
+            $invoice->client->getSetting('send_reminders') &&
+            (Ninja::isSelfHost() || $invoice->company->account->isPaidHostedClient())) {
+
+                    $event_fired = false;
+
+                    $invoice->invitations->each(function ($invitation) use ($invoice, $reminder_template, &$event_fired) {
+                        if ($invitation->contact && !$invitation->contact->trashed() && $invitation->contact->email && !$invitation->contact->is_locked) {
+                            EmailEntity::dispatch($invitation->withoutRelations(), $invitation->company->db, $reminder_template);
+                            nrlog("Firing reminder email for invoice {$invoice->number} - {$reminder_template}");
+                            $invoice->entityEmailEvent($invitation, $reminder_template);
+                            $invoice->sendEvent(Webhook::EVENT_REMIND_INVOICE, "client");
+                            
+                            if (!$event_fired) {
+                                event(new \App\Events\General\EntityWasEmailed($invitation, $invoice->company, \App\Utils\Ninja::eventVars(auth()->user() ? auth()->user()->id : null), $reminder_template));
+                                $event_fired = true;
+                            }
+                            
+                            usleep(200000);
+                        }
+                    });
+                }
+                $invoice->service()->setReminder()->save();
+            } else {
+                $invoice->next_send_date = null;
+                $invoice->save();
             }
-            $invoice->service()->setReminder()->save();
-        } else {
-            $invoice->next_send_date = null;
-            $invoice->save();
-        }
     }
 
     private function addFeeToNewInvoice(Invoice $over_due_invoice, string $reminder_template, array $fees)
@@ -209,7 +219,7 @@ class ReminderJob implements ShouldQueue
                     ->save();
         }
 
-        if(!$invoice) {
+        if (!$invoice) {
             $invoice = $over_due_invoice;
         }
 
@@ -223,11 +233,12 @@ class ReminderJob implements ShouldQueue
                 $invoice->client->getSetting('send_reminders') &&
                 (Ninja::isSelfHost() || $invoice->company->account->isPaidHostedClient())) {
             $invoice->invitations->each(function ($invitation) use ($invoice, $reminder_template) {
-                if ($invitation->contact && !$invitation->contact->trashed() && $invitation->contact->email) {
-                    EmailEntity::dispatch($invitation, $invitation->company, $reminder_template);
+                if ($invitation->contact && !$invitation->contact->trashed() && $invitation->contact->email && !$invitation->contact->is_locked) {
+                    EmailEntity::dispatch($invitation->withoutRelations(), $invitation->company->db, $reminder_template);
                     nrlog("Firing reminder email for invoice {$invoice->number} - {$reminder_template}");
                     $invoice->entityEmailEvent($invitation, $reminder_template);
                     $invoice->sendEvent(Webhook::EVENT_REMIND_INVOICE, "client");
+                    usleep(300000);
                 }
             });
         }
@@ -285,7 +296,7 @@ class ReminderJob implements ShouldQueue
      */
     private function setLateFee($invoice, $amount, $percent): Invoice
     {
-
+        
         $temp_invoice_balance = $invoice->balance;
 
         if ($amount <= 0 && $percent <= 0) {

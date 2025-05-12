@@ -5,7 +5,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -474,7 +474,7 @@ class SubscriptionController extends BaseController
 
         $subscriptions = Subscription::withTrashed()->find($request->ids);
 
-        if(in_array($request->action, ['assign_invoice'])) {
+        if (in_array($request->action, ['assign_invoice'])) {
 
             $subscriptions->each(function ($subscription, $key) use ($request, $user) {
                 if ($user->can('edit', $subscription)) {

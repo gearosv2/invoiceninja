@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -218,8 +218,8 @@ class SendReminders implements ShouldQueue
             if ($this->checkSendSetting($invoice, $template) && $invoice->company->account->hasFeature(Account::FEATURE_EMAIL_TEMPLATES_REMINDERS)) {
                 nlog('firing email');
 
-                EmailEntity::dispatch($invitation, $invitation->company, $template)->delay(10);
-                event(new InvoiceWasEmailed($invoice->invitations->first(), $invoice->company, Ninja::eventVars(), $template));
+                EmailEntity::dispatch($invitation->withoutRelations(), $invitation->company->db, $template)->delay(10);
+                $invoice->entityEmailEvent($invoice->invitations->first(), $template);
                 $invoice->sendEvent(Webhook::EVENT_REMIND_INVOICE, "client");
             }
         });
@@ -230,6 +230,7 @@ class SendReminders implements ShouldQueue
         if (in_array($template, ['reminder1', 'reminder2', 'reminder3'])) {
             $invoice->{$template.'_sent'} = now();
         }
+
         $invoice->service()->touchReminder($template)->save();
 
     }

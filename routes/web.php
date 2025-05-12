@@ -7,8 +7,11 @@ use App\Http\Controllers\Bank\NordigenController;
 use App\Http\Controllers\Bank\YodleeController;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\ClientPortal\ApplePayDomainController;
+use App\Http\Controllers\EInvoice\SelfhostController;
 use App\Http\Controllers\Gateways\Checkout3dsController;
 use App\Http\Controllers\Gateways\GoCardlessController;
+use App\Http\Controllers\Gateways\GoCardlessOAuthController;
+use App\Http\Controllers\Gateways\GoCardlessOAuthWebhookController;
 use App\Http\Controllers\Gateways\Mollie3dsController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\StripeConnectController;
@@ -32,7 +35,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->middle
 
 Route::get('auth/{provider}', [LoginController::class, 'redirectToProvider']);
 
-Route::middleware('url_db')->group(function () {
+Route::middleware(['url_db'])->group(function () {
     Route::get('/user/confirm/{confirmation_code}', [UserController::class, 'confirm']);
     Route::post('/user/confirm/{confirmation_code}', [UserController::class, 'confirmWithPassword']);
 });
@@ -50,4 +53,10 @@ Route::get('mollie/3ds_redirect/{company_key}/{company_gateway_id}/{hash}', [Mol
 Route::get('gocardless/ibp_redirect/{company_key}/{company_gateway_id}/{hash}', [GoCardlessController::class, 'ibpRedirect'])->middleware('domain_db')->name('gocardless.ibp_redirect');
 Route::get('.well-known/apple-developer-merchantid-domain-association', [ApplePayDomainController::class, 'showAppleMerchantId']);
 
-Broadcast::routes(['middleware' => ['token_auth']]);
+Route::get('gocardless/oauth/connect/confirm', [GoCardlessOAuthController::class, 'confirm'])->name('gocardless.oauth.confirm');
+Route::post('gocardless/oauth/connect/webhook', GoCardlessOAuthWebhookController::class)->name('gocardless.oauth.webhook');
+Route::get('gocardless/oauth/connect/{token}', [GoCardlessOAuthController::class, 'connect']);
+
+Route::redirect('buy_now', 'https://invoiceninja.invoicing.co/client/subscriptions/O5xe7Rwd7r/purchase', 301);
+
+\Illuminate\Support\Facades\Broadcast::routes(['middleware' => ['token_auth']]);

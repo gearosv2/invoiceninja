@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -19,15 +19,15 @@ class ProductDecorator implements DecoratorInterface
     {
         $product = false;
 
-        if($entity instanceof Product) {
+        if ($entity instanceof Product) {
             $product = $entity;
-        } elseif($entity->product) {
+        } elseif ($entity->product) {
             $product = $entity->product;
         }
 
-        if($product && method_exists($this, $key)) {
+        if ($product && method_exists($this, $key)) {
             return $this->{$key}($product);
-        } elseif($product->{$key} ?? false) {
+        } elseif ($product->{$key} ?? false) {
             return $product->{$key} ?? '';
         }
 

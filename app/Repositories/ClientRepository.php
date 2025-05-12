@@ -4,7 +4,7 @@
  *
  * @link https://github.com/invoiceninja/invoiceninja source repository
  *
- * @copyright Copyright (c) 2024. Invoice Ninja LLC (https://invoiceninja.com)
+ * @copyright Copyright (c) 2025. Invoice Ninja LLC (https://invoiceninja.com)
  *
  * @license https://www.elastic.co/licensing/elastic-license
  */
@@ -78,7 +78,7 @@ class ClientRepository extends BaseRepository
 
         $client->save();
 
-        if (! isset($client->number) || empty($client->number) || strlen($client->number) == 0) {
+        if (! isset($client->number) || empty($client->number) || strlen($client->number ?? '') == 0) {//@phpstan-ignore-line
             $x = 1;
 
             do {
@@ -106,6 +106,7 @@ class ClientRepository extends BaseRepository
         if (array_key_exists('contacts', $contact_data) || $client->contacts()->count() == 0) {
             $this->contact_repo->save($contact_data, $client);
         }
+
 
         return $client;
     }
@@ -145,8 +146,8 @@ class ClientRepository extends BaseRepository
     public function purge($client)
     {
 
-        nlog("Purging client id => {$client->id}");
-
+        nlog("Purging client id => {$client->id} => {$client->number}");
+        
         $client->contacts()->forceDelete();
         $client->tasks()->forceDelete();
         $client->invoices()->forceDelete();
